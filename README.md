@@ -14,6 +14,7 @@
     -   Error Handling
     -   Project Layout
     -   Observability
+    -   CI/CD (GitHub Actions)
     -   Future Enhancements
 
 ------------------------------------------------------------------------
@@ -132,40 +133,30 @@ curl.exe -i "http://localhost:8080/romannumeral?query=42"
 }
 ```
 
-------------------------------------------------------------------------
-
-## ❤️ Health & Metrics
-
-  Endpoint                 Description
-  ------------------------ ---------------
-  `/actuator/health`       Health status
-
-  `/actuator/info`         App info
-
-  `/actuator/prometheus`   Metrics
-
-------------------------------------------------------------------------
-
 ## ⚙️ Engineering Methodology
 
 ### Design Principles
-
-    1. Separation of Concerns — Clear layering: Controller → Service → Constants. The
+    ● Separation of Concerns — Clear layering: Controller → Service → Constants. The
     controller handles HTTP concerns (parsing, response building), the service owns
     business logic (validation, conversion), and constants are centralized in a single class.
-    2. Greedy Algorithm — The Roman numeral conversion uses a greedy subtraction
+    
+    ● Greedy Algorithm — The Roman numeral conversion uses a greedy subtraction
     algorithm with parallel value/symbol arrays. This is O(1) — bounded by 13 symbol
     iterations regardless of input — making it highly efficient and easy to extend.
-    3. Defensive Input Handling — Input is accepted as a String, trimmed, and validated at
+
+    ●  Defensive Input Handling — Input is accepted as a String, trimmed, and validated at
     multiple layers (empty/blank check in controller, range check in service) before
     conversion.
-    4. Centralized Error Handling — A @RestControllerAdvice (GlobalExceptionHandler)
+
+     ● Centralized Error Handling — A @RestControllerAdvice (GlobalExceptionHandler)
     catches all exception types and maps them to structured JSON error responses with
     consistent format, timestamps, and HTTP status codes.
-    5. Observability-First — Integrated from the start with Micrometer, OpenTelemetry tracing,
+
+     ● Observability-First — Integrated from the start with Micrometer, OpenTelemetry tracing,
     and Prometheus metrics. Distributed trace IDs (traceId, spanId) are injected into every log
     line via the logback pattern.
-    6. Production-Ready Configuration — Kubernetes manifests include health probes
+
+     ● Production-Ready Configuration — Kubernetes manifests include health probes
     (liveness, readiness, startup), HPA, PDB, RBAC, network policies, and security contexts.
 
 ## Inline Documentation
@@ -179,18 +170,54 @@ curl.exe -i "http://localhost:8080/romannumeral?query=42"
 
 ## Testing Methodology
 
-``` bash
-./mvnw clean test
-./mvnw verify
-```
-    -   JaCoCo 90% coverage enforced
-    -   Load testing with concurrency
 
+## Running Tests
+``` bash
+# Run all tests (unit + integration)
+    ./mvnw clean test
+    
+# Run full verification (includes integration tests)
+    ./mvnw verify
+# Run a specific test class
+    ./mvnw test -Dtest=RomanNumeralConverterServiceTest
+``` 
+# Code Coverage
+    ● JaCoCo is configured with a 90% line coverage minimum enforced at build time.
+    ● Coverage report is generated at target/site/jacoco/index.html after running tests.
+# Generate and view coverage report
+    ./mvnw clean test
+    open target/site/jacoco/index.html
+# Load Testing
+    The RomanNumeralApiLoadTest runs 400 requests with 20 concurrent threads, including a
+    warm-up phase. It asserts:
+        ● Zero failures across all requests
+        ● Average latency < 250ms
+        ● P95 latency < 500ms
+
+    | Category   | Class                            | Description |
+    |----------  |---=------------------------------|----------------------------------------------------------|
+    | Unit Tests | RomanNumeralConverterServiceTest | Tests conversion logic and range validation in isolation |
+    | Unit Tests | RomanNumeralsConstantsTest | Verifies constants  Verifies constant values are correctly defined |
+    | Unit Tests | RomanNumeralControllerUnitTest | Controller logic tested with mocked service |
+    | WebMvc Tests | RomanNumeralControllerWebMvcTest | Spring MockMvc tests for HTTP layer (serialization, status codes)   |
+    | Integration | RomanNumeralControllerIntegrationTest | Full Spring Boot context with TestRestTemplate |
+    | Integration | RomanNumeralsApplicationTests | Verifies application context loads successfully  |
+    | Exception | GlobalExceptionHandlerTest | Tests all exception handler branches |
+    | Load Tests | RomanNumeralApiLoadTest | 400 concurrent requests across 20 threads with latency assertions  |
 ------------------------------------------------------------------------
 
 ## Error Handling
 
-    Centralized via `@RestControllerAdvice`.
+    The GlobalExceptionHandler (@RestControllerAdvice) provides centralized, consistent error responses: .
+
+    | Exception Type | HTTP Status | Scenario |
+    |---------------|------------|----------|
+    | MissingServletRequestParameterException | 400 | query not provided |
+    | IllegalArgumentException | 400 | invalid input |
+    | NumberFormatException | 400 | non-numeric |
+    | MethodArgumentTypeMismatchException | 400 | type mismatch |
+    | HttpMessageNotReadableException | 400 | malformed body |
+    | Exception | 500 | unhandled |
 
 ``` json
 {
@@ -202,7 +229,15 @@ curl.exe -i "http://localhost:8080/romannumeral?query=42"
 ```
 
 ------------------------------------------------------------------------
-
+## CI/CD (GitHub Actions)
+    The .github/workflows/ci-cd.yml pipeline runs on push/PR to main and develop:
+        1. Build & Test - Compile, unit + integration tests, upload coverage to Codecov
+        2. Docker Build & Push - Build image and push to GitHub Container Registry (on push
+           only)
+        3. Security Scan - Trivy vulnerability scanning with SARIF upload to GitHub Security tab
+        4. Code Quality - SonarQube static analysis
+        5. Notification - Build status reporting via GitHub Checks and optional Slack integration.
+-----------------------------------------------------------------------------------
 ## 📊 Full Observability Stack
 
 ### Metrics (Prometheus + Grafana)
