@@ -7,14 +7,13 @@
 
 ## 📚 Table of Contents
     -   Quick Start
+    -   Running the Application
     -   API Reference
     -   Engineering Methodology
     -   Testing Methodology
     -   Error Handling
     -   Project Layout
     -   Observability
-    -   Deployment
-    -   Dependency Attribution
     -   Future Enhancements
 
 ------------------------------------------------------------------------
@@ -23,81 +22,79 @@
 
 ### Prerequisites
     Before starting, make sure you have the following installed in your local environment:
-    -   Java 17+
-    -   Maven 3.9+ (or use the included Maven wrapper `./mvnw`)
-    -   Docker (optional for observability stack)
+        -   Java 17+
+        -   Maven 3.9+ (or use the included Maven wrapper `./mvnw`)
+        -   Docker (optional for observability stack)
 
-### Build
-clone 
+### Build the Project
 
-``` bash
-./mvnw clean package
+```bash
+# Clone the repository
+git clone https://github.com/suhasini86/roman-numerals.git
+cd roman-numerals
+
+# Build the project with Maven
+mvn clean install
+
+# Build with tests
+mvn clean verify
+
+# Skip tests (not recommended for production)
+mvn clean package -DskipTests
+
 ```
 
-### Build without tests:
+## 🚀 Running the Application
 
-``` bash
-./mvnw clean package -DskipTests
+### Method 1: Run Locally with Maven
+
+```bash
+mvn spring-boot:run
 ```
 
-### Run Locally
+### Method 2: Run with Java
 
-``` bash
-./mvnw spring-boot:run
+```bash
+mvn clean package
+java -jar target/roman-numerals-1.0.0.jar
 ```
 
-    or
-
-``` bash
-java -jar target/roman-numerals-0.0.1-SNAPSHOT.jar
-```
-
-Application runs at: http://localhost:8080
-
-------------------------------------------------------------------------
-
-## 🐳 Run with Docker
-
-``` bash
+### Method 3: Docker
+    To build and run the application in a Docker container, make sure you have Docker installed and running on your machine, then execute the following commands:
+```bash
+# Build image
 docker build -t roman-numerals:latest .
+
+# Run container
 docker run -p 8080:8080 roman-numerals:latest
 ```
 
-------------------------------------------------------------------------
+### Method 4: Docker Compose (with Prometheus and Grafana)
 
-## 📊 Full Observability Stack
-
-``` bash
+    To run the full observability stack with the API, Prometheus, Grafana, and OpenTelemetry Collector. 
+    Reference on how to access the dash boards were provided in the Observability section below.
+```bash
 cd observability
-docker compose up --build
+docker-compose up -d
 ```
-      Service                 URL
-      ----------------------- -----------------------
-      API                     http://localhost:8080
-    
-      Prometheus              http://localhost:9090
-    
-      Grafana                 http://localhost:3000
-    
-      OTel Collector (gRPC)   http://localhost:4317
-    
-      OTel Collector (HTTP)   http://localhost:4318
-
-------------------------------------------------------------------------
 
 ## 🧪 Test the API
-
+    You can test the API using curl or any HTTP client (e.g., Postman, Insomnia). Here’s an example of how to call the API:
+Mac
 ``` bash
 curl http://localhost:8080/romannumeral?query=42
 ```
-
-Response:
-
-``` json
-{
-  "input": "42",
-  "output": "XLII"
-}
+Windows (PowerShell)
+``` powershell
+curl.exe -i "http://localhost:8080/romannumeral?query=42"
+```
+    Response:
+    
+    ``` json
+    {
+      "input": "42",
+      "output": "XLII"
+    }
 ```
 
 ------------------------------------------------------------------------
@@ -185,8 +182,8 @@ Response:
 ./mvnw clean test
 ./mvnw verify
 ```
--   JaCoCo 90% coverage enforced
--   Load testing with concurrency
+    -   JaCoCo 90% coverage enforced
+    -   Load testing with concurrency
 
 ------------------------------------------------------------------------
 
@@ -202,6 +199,25 @@ Response:
   "message": "Query must be a valid integer"
 }
 ```
+
+------------------------------------------------------------------------
+
+## 📊 Full Observability Stack
+    To view the full observability stack with Prometheus metrics, Grafana dashboards, and OpenTelemetry tracing, run the following command from the `observability` directory:
+``` bash
+cd observability
+docker compose up --build
+
+```
+      Service                 URL
+      ----------------------- -----------------------
+      Health                  http://localhost:8080/actuator/health
+
+      Metrics                 http://localhost:8080/actuator/info
+    
+      Prometheus              http://localhost:9090
+    
+      Grafana                 http://localhost:3000
 
 ------------------------------------------------------------------------
 
