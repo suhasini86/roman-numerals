@@ -228,11 +228,50 @@ Centralized via `@RestControllerAdvice`.
 ## 📁 Project Layout
 
     roman-numerals/
-    ├── pom.xml
-    ├── Dockerfile
-    ├── src/
+    ├── pom.xml                                  # Maven build config & dependency management
+    ├── Dockerfile                               # Multi-stage Docker build (build + runtime)
+    ├── mvnw/mvnw.cmd                            # Maven wrapper (no local Maven install needed)
+    ├── src/main/java/com/adobe/aem/romannumerals/
+    │   ├── RomanNumeralsApplication.java        # Spring Boot entry point
+    │   ├── constants/
+    │   │   └── RomanNumeralsConstants.java      # Centralized constants (ranges, error messages)
+    │   ├── controller/
+    │   │   └── RomanNumeralController.java      # REST endpoint: GET /romannumeral?query=
+    │   ├── dto/
+    │   │   ├── RomanNumeralResponse.java        # Success response DTO
+    │   │   └── ErrorResponse.java               # Error response DTO
+    │   ├── exception/
+    │   │   └── GlobalExceptionHandler.java      # @RestControllerAdvice for all exceptions
+    │   └── service/
+    │       └── RomanNumeralConverterService.java # Conversion logic (greedy algorithm)
+    ├── src/main/resources/
+    │   ├── application.yaml                     # App config (actuator, tracing, OTLP)
+    │   └── logback-spring.xml                   # Logging with traceId/spanId in output
+    ├── src/test/java/com/adobe/aem/romannumerals/
+    │   ├── RomanNumeralsApplicationTests.java   # Context load test + Main method coverage
+    │   ├── constants/
+    │   │   └── RomanNumeralsConstantsTest.java  # Constants verification
+    │   ├── controller/
+    │   │   ├── RomanNumeralControllerUnitTest.java       # Unit tests (mocked service)
+    │   │   ├── RomanNumeralControllerWebMvcTest.java     # MockMvc HTTP-layer tests
+    │   │   └── RomanNumeralControllerIntegrationTest.java # Full integration tests
+    │   ├── exception/
+    │   │   └── GlobalExceptionHandlerTest.java  # Exception handler branch tests
+    │   ├── load/
+    │   │   └── RomanNumeralApiLoadTest.java     # Concurrent load test (20 threads)
+    │   └── service/
+    │       └── RomanNumeralConverterServiceTest.java # Service unit tests
     ├── k8s/
+    │   └── deployment.yaml                      # K8s manifests (Namespace, Deployment, Service, HPA, PDB, RBAC, NetworkPolicy)
     ├── observability/
+    │   ├── docker-compose.yml                   # Full observability stack (app + Prometheus + Grafana + OTel)
+    │   ├── prometheus/prometheus.yml            # Prometheus scrape config
+    │   ├── grafana/                             # Pre-built Grafana dashboards
+    │   │   ├── dashboards/
+    │   │   └── provisioning/                    # Auto-provisioned datasources & dashboards
+    │   └── otel-collector-config.yaml           # OpenTelemetry Collector pipeline config
+    └── .github/workflows/
+    └── ci-cd.yml                            # GitHub Actions CI/CD pipeline
 
 ------------------------------------------------------------------------
 
