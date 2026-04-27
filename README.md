@@ -210,6 +210,15 @@ curl.exe -i "http://localhost:8080/romannumeral?query=42"
 
     The GlobalExceptionHandler (@RestControllerAdvice) provides centralized, consistent error responses: .
 
+| Exception Type                          | HTTP Status| Scenario                                  |
+|-----------------------------------------|------------|-------------------------------------------|
+| MissingServletRequestParameterException | 400        | query parameter not provided              |
+| IllegalArgumentException                | 400        | Empty/blank query, or value outside range |
+| NumberFormatException                   | 400        | Non-numeric input (e.g., ?query=abc)      |
+| MethodArgumentTypeMismatchException     | 400        | Type mismatch on request parameter        |
+| HttpMessageNotReadableException         | 400        | Malformed request body                    |
+| Exception                               | 500        | Any unhandled exception                   |
+
     | Exception Type | HTTP Status | Scenario |
     |---------------|------------|----------|
     | MissingServletRequestParameterException | 400 | query not provided |
@@ -217,7 +226,7 @@ curl.exe -i "http://localhost:8080/romannumeral?query=42"
     | NumberFormatException | 400 | non-numeric |
     | MethodArgumentTypeMismatchException | 400 | type mismatch |
     | HttpMessageNotReadableException | 400 | malformed body |
-    | Exception | 500 | unhandled |
+    | Exception | 500 | Any unhandled exception |
 
 ``` json
 {
