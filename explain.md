@@ -12,32 +12,9 @@ AI Usage Explanation
 
 ## AI Tools Used  
     ● ChatGPT (prompting, design discussions)
-    ● GitHub Copilot (code generation, suggestions, test case generation)
-    ● Github Copilt premium models (code generation, suggestions, test case generation)
-
-## System Design & Architecture  
-
-   Base package: com.adobe.aem Application: RomanNumeralApplication
-
-        Package Structure
-        
-        com.adobe.aem.romannumerals  
-        ├── controller  
-        ├── service  
-        ├── constants
-        ├── exception  
-        ├── dto
-        └── RomanNumeralApplication
-
-### Design Principles  
-    ● Separation of concerns: Controller (HTTP), Service (business logic), Model (DTOs),  
-    Exception (error handling)  
-    ● Extensibility: Designed to support future range expansion (up to 3999) without structural  
-    changes  
-    ● Clarity over abstraction: Avoided unnecessary layers or patterns for a focused service
-
-    AI initially suggested multiple structural options; a layered architecture was selected and  
-    simplified to align with Spring Boot best practices.
+    ● Github Copilt premium models - Claude opus 
+        - Code generation, suggestions, test case generation, and refactoring recommendations.
+        - Code review and validation were performed manually by me, without AI assistance.
 
 ## AI-Assisted Development Workflow
 
@@ -84,16 +61,18 @@ AI Usage Explanation
     Prompting evolved from broad to highly constrained:
 
 ### Initial Prompts  
-    ● General requests (e.g., “Roman numeral converter in Java”)
+    ● General requests (e.g., “As a seniore developer create a Roman numeral converter micropservice 
+    with Spring Boot and Java17”)
 
 ### Refined Prompts  
     ● Constraint-driven:  
         ○ No external libraries  
         ○ Spring Boot structure  
         ○ Strict API contract  
+        ○ Logging and metrics requirements
         ○ Edge case handling
 
-    Key Learning Precise prompts significantly improved output quality and reduced rework.  
+    Key Learning - Precise prompts significantly improved output quality and reduced rework.  
     Iterative prompting was essential for aligning AI output with requirements.
 
 ## Validation & Quality Control  

@@ -74,12 +74,13 @@ docker run -p 8080:8080 roman-numerals:latest
     To run the full observability stack with the API, Prometheus, Grafana, and OpenTelemetry Collector. 
     Reference on how to access the dash boards were provided in the Observability section below.
 ```bash
-cd observability
-docker-compose up -d
+    cd observability
+    docker-compose up -d
 ```
 
 ## 🧪 Test the API
-    You can test the API using curl or any HTTP client (e.g., Postman, Insomnia). Here’s an example of how to call the API:
+    You can test the API using curl or any HTTP client (e.g., Postman, Insomnia).
+    Here’s an example of how to call the API:
 Mac
 ``` bash
 curl http://localhost:8080/romannumeral?query=42
@@ -203,10 +204,27 @@ curl.exe -i "http://localhost:8080/romannumeral?query=42"
 ------------------------------------------------------------------------
 
 ## 📊 Full Observability Stack
-    To view the full observability stack with Prometheus metrics, Grafana dashboards, and OpenTelemetry tracing, run the following command from the `observability` directory:
+
+### Metrics (Prometheus + Grafana)
+    ● Micrometer exports application metrics to the /actuator/prometheus endpoint.
+    ● Prometheus scrapes metrics at a configured interval.
+    ● Grafana dashboards are auto-provisioned for visualizing. A custom dashboard is included for
+    the Roman numeral conversion API, showing request counts,latencies, and error rates.
+### Distributed Tracing (OpenTelemetry)
+    ● Micrometer Tracing Bridge integrates with OpenTelemetry to generate trace spans for
+    every request.
+    ● Traces are exported via OTLP HTTP to the OpenTelemetry Collector (port 4318).
+    ● traceId and spanId are injected into every log line for correlation.
+### Structured Logging
+    Log pattern includes trace context for end-to-end request correlation:
+    2026-04-27 10:00:00.000 [http-nio-8080-exec-1] INFO  
+    c.a.a.r.controller.RomanNumeralController traceId=abc123 spanId=def456 - Received...
+
+    To view the full observability stack with Prometheus metrics, Grafana dashboards, and OpenTelemetry tracing,
+    run the following command from the `observability` directory:
 ``` bash
-cd observability
-docker compose up --build
+    cd observability
+    docker compose up --build
 
 ```
       Service                 URL
