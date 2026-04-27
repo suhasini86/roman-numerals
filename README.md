@@ -1,33 +1,31 @@
 # Roman Numerals Converter API
 
-A production-ready Spring Boot REST API that converts integers to Roman
-numerals, with full observability, containerization, and Kubernetes
-deployment support.
+    A production-ready Spring Boot REST API that converts integers to Roman
+    numerals, with full observability, containerization, and Kubernetes
+    deployment support.
 
 ------------------------------------------------------------------------
 
 ## 📚 Table of Contents
-
--   Quick Start
--   API Reference
--   Engineering Methodology
--   Testing Methodology
--   Error Handling
--   Project Layout
--   Observability
--   Deployment
--   Dependency Attribution
--   Future Enhancements
+    -   Quick Start
+    -   API Reference
+    -   Engineering Methodology
+    -   Testing Methodology
+    -   Error Handling
+    -   Project Layout
+    -   Observability
+    -   Deployment
+    -   Dependency Attribution
+    -   Future Enhancements
 
 ------------------------------------------------------------------------
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-
--   Java 17+
--   Maven 3.9+ (or use the included Maven wrapper `./mvnw`)
--   Docker (optional)
+    -   Java 17+
+    -   Maven 3.9+ (or use the included Maven wrapper `./mvnw`)
+    -   Docker (optional)
 
 ### Build
 
@@ -47,13 +45,13 @@ deployment support.
 ./mvnw spring-boot:run
 ```
 
-or
+    or
 
 ``` bash
 java -jar target/roman-numerals-0.0.1-SNAPSHOT.jar
 ```
 
-    Application runs at: http://localhost:8080
+Application runs at: http://localhost:8080
 
 ------------------------------------------------------------------------
 
