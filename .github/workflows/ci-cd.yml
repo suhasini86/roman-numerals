@@ -148,8 +148,9 @@ jobs:
     name: Notification
     runs-on: ubuntu-latest
     if: always()
-    needs: [build-and-test, docker-build-and-push, security-scan, code-quality]
+    needs: [ build-and-test, docker-build-and-push, security-scan, code-quality ]
 
     steps:
       - name: Build status
-        run: echo "Build status: ${{ job.status }}"
+        run: |
+          echo "Build status: ${{ job.status }}"
