@@ -219,15 +219,6 @@ curl.exe -i "http://localhost:8080/romannumeral?query=42"
 | HttpMessageNotReadableException         | 400        | Malformed request body                    |
 | Exception                               | 500        | Any unhandled exception                   |
 
-    | Exception Type | HTTP Status | Scenario |
-    |---------------|------------|----------|
-    | MissingServletRequestParameterException | 400 | query not provided |
-    | IllegalArgumentException | 400 | invalid input |
-    | NumberFormatException | 400 | non-numeric |
-    | MethodArgumentTypeMismatchException | 400 | type mismatch |
-    | HttpMessageNotReadableException | 400 | malformed body |
-    | Exception | 500 | Any unhandled exception |
-
 ``` json
 {
   "timestamp": "2026-04-27T00:00:00Z",
