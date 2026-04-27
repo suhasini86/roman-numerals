@@ -1,4 +1,4 @@
-name: Build, Test, and Deploy Roman Numerals Service
+name: Build, Test Roman Numerals Service
 
 on:
   push:
@@ -12,7 +12,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: adobe-assessment/roman-numerals
+  IMAGE_NAME: suhasini86/roman-numerals:latest
 
 jobs:
   build-and-test:
@@ -149,35 +149,6 @@ jobs:
           -Dsonar.coverage.exclusions=**/dto/**,**/config/** \
           || true
 
-  deploy-to-k8s:
-    name: Deploy to Kubernetes
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: [build-and-test, docker-build-and-push]
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
-
-    - name: Set up kubectl
-      uses: azure/setup-kubectl@v3
-
-    - name: Configure kubectl
-      run: |
-        mkdir -p $HOME/.kube
-        echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
-        chmod 600 $HOME/.kube/config
-
-    - name: Deploy to Kubernetes
-      run: |
-        kubectl apply -f k8s/deployment.yaml
-        kubectl rollout status deployment/roman-numerals-deployment -n roman-numerals --timeout=5m
-
-    - name: Verify deployment
-      run: |
-        kubectl get pods -n roman-numerals
-        kubectl get svc -n roman-numerals
-
   notify:
     name: Notification
     runs-on: ubuntu-latest
@@ -185,6 +156,6 @@ jobs:
     needs: [build-and-test, docker-build-and-push, security-scan, code-quality]
     
     steps:
-    - name: Build status
-      run: echo "Build status: ${{ job.status }}"
-=
+      - name: Build status
+        run:
+          echo "Build status: ${{ job.status }}"

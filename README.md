@@ -1,8 +1,7 @@
 # Roman Numerals Converter API
 
     A production-ready Spring Boot REST API that converts integers to Roman
-    numerals, with full observability, containerization, and Kubernetes
-    deployment support.
+    numerals, with full observability and  docker containerization support.
 
 ------------------------------------------------------------------------
 
@@ -23,11 +22,13 @@
 ## 🚀 Quick Start
 
 ### Prerequisites
+    Before starting, make sure you have the following installed in your local environment:
     -   Java 17+
     -   Maven 3.9+ (or use the included Maven wrapper `./mvnw`)
-    -   Docker (optional)
+    -   Docker (optional for observability stack)
 
 ### Build
+clone 
 
 ``` bash
 ./mvnw clean package
