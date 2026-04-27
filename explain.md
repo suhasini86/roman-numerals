@@ -1,19 +1,19 @@
 AI Usage Explanation
 
 ## Overview  
-   This project was developed using AI as a primary accelerator, in line with the hiring manager's  
-   guidance to leverage AI extensively. The objective was not only to deliver a correct solution, but  
-   to demonstrate a disciplined, transparent, and production-oriented approach to  
-   AI-assisted engineering.
+    This project was developed using AI as a primary accelerator, in line with the hiring manager's  
+    guidance to leverage AI extensively. The objective was not only to deliver a correct solution, but  
+    to demonstrate a disciplined, transparent, and production-oriented approach to  
+    AI-assisted engineering.
 
-AI was used for ideation, scaffolding, and iteration. However, all final decisions—architecture,  
-validation, observability scope, and API compliance—were made deliberately, with full manual  
-review and testing.
+    AI was used for ideation, scaffolding, and iteration. However, all final decisions—architecture,  
+    validation, observability scope, and API compliance—were made deliberately, with full manual  
+    review and testing.
 
 ## AI Tools Used  
-   ● ChatGPT (prompting, design discussions)
-   ● GitHub Copilot (code generation, suggestions, test case generation)
-   ● Github Copilt premium models (code generation, suggestions, test case generation)
+    ● ChatGPT (prompting, design discussions)
+    ● GitHub Copilot (code generation, suggestions, test case generation)
+    ● Github Copilt premium models (code generation, suggestions, test case generation)
 
 ## System Design & Architecture  
 
@@ -49,8 +49,8 @@ review and testing.
 ### Core Logic (Roman Numeral Conversion)  
     ● AI generated an initial greedy algorithm  
     ● Logic was manually reviewed and validated against Roman numeral rules:  
-    ○ Correct symbol mapping  
-    ○ Subtractive notation (IV, IX, XL, XC, etc.)  
+        ○ Correct symbol mapping  
+        ○ Subtractive notation (IV, IX, XL, XC, etc.)  
     ● Refactored to improve readability and ensure deterministic behavior
 
     No external libraries were used, as required.
@@ -58,25 +58,25 @@ review and testing.
 ### API Implementation  
     ● AI generated initial controller scaffolding  
     ● I enforced:  
-    ○ Strict adherence to API contract  
-    ○ Clean separation of validation and business logic  
-    ○ Consistent response structure
+        ○ Strict adherence to API contract  
+        ○ Clean separation of validation and business logic  
+        ○ Consistent response structure
 
 ### Error Handling  
     ● AI suggested general patterns  
     ● Implemented:  
-    ○ Centralized exception handling  
-    ○ Clear error messaging  
-    ○ Consistent failure responses
+        ○ Centralized exception handling  
+        ○ Clear error messaging  
+        ○ Consistent failure responses
 
     Design favors simplicity and predictability over excessive abstraction.
 
 ### Testing  
     ● AI generated baseline test scenarios  
     ● I extended coverage to include:  
-    ○ Boundary values (1, 255)  
-    ○ Subtractive edge cases (4, 9, 40, 90)  
-    ○ Invalid inputs (missing, non-numeric, out-of-range)
+        ○ Boundary values (1, 255)  
+        ○ Subtractive edge cases (4, 9, 40, 90)  
+        ○ Invalid inputs (missing, non-numeric, out-of-range)
 
     Testing was used as the primary validation mechanism for AI-generated logic.
 
@@ -113,21 +113,21 @@ review and testing.
 
 ### Refined Prompts  
     ● Constraint-driven:  
-    ○ No external libraries  
-    ○ Spring Boot structure  
-    ○ Strict API contract  
-    ○ Edge case handling
+        ○ No external libraries  
+        ○ Spring Boot structure  
+        ○ Strict API contract  
+        ○ Edge case handling
 
     Key Learning Precise prompts significantly improved output quality and reduced rework.  
     Iterative prompting was essential for aligning AI output with requirements.
 
 ## Validation & Quality Control  
-       All AI-generated outputs were subject to:  
+    All AI-generated outputs were subject to:  
        ● Manual code review  
        ● Unit and integration testing  
        ● Requirement verification
 
-        No code was accepted without validation. AI was treated as a generator, not a source of truth.
+    No code was accepted without validation. AI was treated as a generator, not a source of truth.
 
 ## Responsibility Split
 
