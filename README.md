@@ -194,16 +194,16 @@ curl.exe -i "http://localhost:8080/romannumeral?query=42"
         ● Average latency < 250ms
         ● P95 latency < 500ms
 
-    | Category   | Class                            | Description |
-    |----------  |---=------------------------------|----------------------------------------------------------|
-    | Unit Tests | RomanNumeralConverterServiceTest | Tests conversion logic and range validation in isolation |
-    | Unit Tests | RomanNumeralsConstantsTest | Verifies constants  Verifies constant values are correctly defined |
-    | Unit Tests | RomanNumeralControllerUnitTest | Controller logic tested with mocked service |
-    | WebMvc Tests | RomanNumeralControllerWebMvcTest | Spring MockMvc tests for HTTP layer (serialization, status codes)   |
-    | Integration | RomanNumeralControllerIntegrationTest | Full Spring Boot context with TestRestTemplate |
-    | Integration | RomanNumeralsApplicationTests | Verifies application context loads successfully  |
-    | Exception | GlobalExceptionHandlerTest | Tests all exception handler branches |
-    | Load Tests | RomanNumeralApiLoadTest | 400 concurrent requests across 20 threads with latency assertions  |
+| Category   | Class                            | Description |
+|----------  |---=------------------------------|----------------------------------------------------------|
+| Unit Tests | RomanNumeralConverterServiceTest | Tests conversion logic and range validation in isolation|
+| Unit Tests | RomanNumeralsConstantsTest | Verifies constants  Verifies constant values are correctly defined|
+| Unit Tests | RomanNumeralControllerUnitTest | Controller logic tested with mocked service |
+| WebMvc Tests | RomanNumeralControllerWebMvcTest | Spring MockMvc tests for HTTP layer (serialization, status codes)|
+| Integration | RomanNumeralControllerIntegrationTest | Full Spring Boot context with TestRestTemplate|
+| Integration | RomanNumeralsApplicationTests | Verifies application context loads successfully|
+| Exception | GlobalExceptionHandlerTest | Tests all exception handler branches|
+| Load Tests | RomanNumeralApiLoadTest | 400 concurrent requests across 20 threads with latency assertions|
 ------------------------------------------------------------------------
 
 ## Error Handling
