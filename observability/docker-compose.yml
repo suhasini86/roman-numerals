@@ -1,0 +1,55 @@
+services:
+  app:
+    image: roman-numerals:latest
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: roman-numerals-app
+    ports:
+      - "8080:8080"
+    environment:
+      - OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://otel-collector:4318/v1/traces
+    depends_on:
+      - otel-collector
+    networks:
+      - roman-numerals-network
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - roman-numerals-network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+    networks:
+      - roman-numerals-network
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+      - app
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    command: ["--config=/etc/otel-collector-config.yml"]
+    volumes:
+      - ./otel/otel-collector-config.yml:/etc/otel-collector-config.yml
+    ports:
+      - "4318:4318"
+      - "4317:4317"
+    networks:
+      - roman-numerals-network
+
+networks:
+  roman-numerals-network:
+    driver: bridge
