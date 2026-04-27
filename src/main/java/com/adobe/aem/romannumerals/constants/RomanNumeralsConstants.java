@@ -1,6 +1,10 @@
 package com.adobe.aem.romannumerals.constants;
 
 public class RomanNumeralsConstants {
+
+    private RomanNumeralsConstants() {
+        throw new UnsupportedOperationException("Utility class - can not be instantiated.");
+    }
     public static final int MIN_VALUE = 1;
     public static final int MAX_VALUE = 255; //
     public static final String INVALID_NUMBER_MESSAGE = "Query must be a valid integer";

@@ -5,8 +5,8 @@ import lombok.Getter;
 import java.time.Instant;
 
 /**
- * Error response DTO for successful Roman numeral conversion
- */
+ * Response DTO for error responses containing timne stamp, status, error type and message
+ * */
 
 @Getter
 public class ErrorResponse {

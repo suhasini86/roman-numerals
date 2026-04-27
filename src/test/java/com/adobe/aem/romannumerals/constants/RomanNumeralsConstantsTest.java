@@ -3,16 +3,20 @@ package com.adobe.aem.romannumerals.constants;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 class RomanNumeralsConstantsTest {
 
     @Test
-    @DisplayName("Constants class should be instantiable")
-    void constantsClassShouldBeInstantiable() {
-        RomanNumeralsConstants constants = new RomanNumeralsConstants();
-        assertNotNull(constants);
+    @DisplayName("Constants class should not be instantiable")
+    void constantsClassShouldNotBeInstantiable() throws NoSuchMethodException{
+        Constructor<RomanNumeralsConstants> constructor = RomanNumeralsConstants.class.getDeclaredConstructor();
+        assertTrue(java.lang.reflect.Modifier.isPrivate(constructor.getModifiers()));
+        constructor.setAccessible(true);
+        assertThrows(InvocationTargetException.class, constructor::newInstance);
     }
 
     @Test

@@ -1,0 +1,171 @@
+AI Usage Explanation
+
+## Overview  
+   This project was developed using AI as a primary accelerator, in line with the hiring manager's  
+   guidance to leverage AI extensively. The objective was not only to deliver a correct solution, but  
+   to demonstrate a disciplined, transparent, and production-oriented approach to  
+   AI-assisted engineering.
+
+AI was used for ideation, scaffolding, and iteration. However, all final decisions—architecture,  
+validation, observability scope, and API compliance—were made deliberately, with full manual  
+review and testing.
+
+## AI Tools Used  
+   ● ChatGPT (prompting, design discussions)
+   ● GitHub Copilot (code generation, suggestions, test case generation)
+   ● Github Copilt premium models (code generation, suggestions, test case generation)
+
+## System Design & Architecture  
+
+   Base package: com.adobe.aem Application: RomanNumeralApplication
+
+        Package Structure
+        
+        com.adobe.aem.romannumerals  
+        ├── controller  
+        ├── service  
+        ├── constants
+        ├── exception  
+        ├── dto
+        └── RomanNumeralApplication
+
+### Design Principles  
+    ● Separation of concerns: Controller (HTTP), Service (business logic), Model (DTOs),  
+    Exception (error handling)  
+    ● Extensibility: Designed to support future range expansion (up to 3999) without structural  
+    changes  
+    ● Clarity over abstraction: Avoided unnecessary layers or patterns for a focused service
+
+    AI initially suggested multiple structural options; a layered architecture was selected and  
+    simplified to align with Spring Boot best practices.
+
+## AI-Assisted Development Workflow
+
+### Architecture Exploration  
+    ● AI was used to evaluate possible project structures  
+    ● Multiple options were compared (flat vs layered)  
+    ● Final structure was selected based on maintainability and clarity
+
+### Core Logic (Roman Numeral Conversion)  
+    ● AI generated an initial greedy algorithm  
+    ● Logic was manually reviewed and validated against Roman numeral rules:  
+    ○ Correct symbol mapping  
+    ○ Subtractive notation (IV, IX, XL, XC, etc.)  
+    ● Refactored to improve readability and ensure deterministic behavior
+
+    No external libraries were used, as required.
+
+### API Implementation  
+    ● AI generated initial controller scaffolding  
+    ● I enforced:  
+    ○ Strict adherence to API contract  
+    ○ Clean separation of validation and business logic  
+    ○ Consistent response structure
+
+### Error Handling  
+    ● AI suggested general patterns  
+    ● Implemented:  
+    ○ Centralized exception handling  
+    ○ Clear error messaging  
+    ○ Consistent failure responses
+
+    Design favors simplicity and predictability over excessive abstraction.
+
+### Testing  
+    ● AI generated baseline test scenarios  
+    ● I extended coverage to include:  
+    ○ Boundary values (1, 255)  
+    ○ Subtractive edge cases (4, 9, 40, 90)  
+    ○ Invalid inputs (missing, non-numeric, out-of-range)
+
+    Testing was used as the primary validation mechanism for AI-generated logic.
+
+## Observability & DevOps Approach (Extension 3)  
+    The observability stack was designed to reflect real-world production practices while
+    remaining appropriately scoped for this service.
+
+### Implemented Components  
+    ● Logback → Structured application logging  
+    ● OpenTelemetry → Request tracing  
+    ● Prometheus → Metrics exposure  
+    ● Grafana → Metrics visualization  
+    ● Docker → Portable runtime
+
+### Design Rationale  
+    ● Focused on core observability pillars: logs, metrics, traces  
+    ● Avoided overengineering (e.g., Kubernetes) to maintain simplicity  
+    ● Ensured all components are runnable locally and easy to validate
+
+### Outcome The system provides:  
+    ● Visibility into request flow (tracing)  
+    ● Operational insight (metrics)  
+    ● Debug capability (logs)
+
+    AI assisted in identifying tooling options; final selection and integration scope were deliberate  
+    decisions.
+
+## Prompting Strategy  
+
+   Prompting evolved from broad to highly constrained:
+
+### Initial Prompts  
+    ● General requests (e.g., “Roman numeral converter in Java”)
+
+### Refined Prompts  
+    ● Constraint-driven:  
+    ○ No external libraries  
+    ○ Spring Boot structure  
+    ○ Strict API contract  
+    ○ Edge case handling
+
+    Key Learning Precise prompts significantly improved output quality and reduced rework.  
+    Iterative prompting was essential for aligning AI output with requirements.
+
+## Validation & Quality Control  
+       All AI-generated outputs were subject to:  
+       ● Manual code review  
+       ● Unit and integration testing  
+       ● Requirement verification
+
+        No code was accepted without validation. AI was treated as a generator, not a source of truth.
+
+## Responsibility Split
+
+### AI Contributions  
+    ● Code scaffolding  
+    ● Algorithm suggestions  
+    ● Test case generation  
+    ● Tooling recommendations
+
+### My Contributions  
+    ● Final architecture decisions  
+    ● Input validation design  
+    ● Error handling strategy  
+    ● Code refinement and simplification  
+    ● End-to-end validation
+
+## Tradeoffs & Decisions
+
+### Simplicity vs Capability  
+    ● Implemented full observability (logs, metrics, tracing)
+
+### Speed vs Control  
+    ● AI accelerated development significantly  
+    ● Manual validation ensured correctness and maintainability
+
+## Risks of AI Usage & Mitigation
+
+### Risks  
+    ● Incorrect or incomplete logic  
+    ● Overly complex generated code  
+    ● Misalignment with requirements
+
+### Mitigation  
+    ● Iterative prompt refinement  
+    ● Manual validation at each stage  
+    ● Strong test coverage
+
+## Conclusion  
+    This project demonstrates a pragmatic and controlled use of AI in software development. AI was  
+    leveraged extensively to improve speed and coverage, while human oversight ensured  
+    correctness, clarity, and alignment with engineering best practices.
