@@ -92,8 +92,7 @@ AI Usage Explanation
     ● Docker → Portable runtime
 
 ### Design Rationale  
-    ● Focused on core observability pillars: logs, metrics, traces  
-    ● Avoided overengineering (e.g., Kubernetes) to maintain simplicity  
+    ● Focused on core observability pillars: logs, metrics, traces
     ● Ensured all components are runnable locally and easy to validate
 
 ### Outcome The system provides:  
@@ -104,9 +103,8 @@ AI Usage Explanation
     AI assisted in identifying tooling options; final selection and integration scope were deliberate  
     decisions.
 
-## Prompting Strategy  
-
-   Prompting evolved from broad to highly constrained:
+## Prompting Strategy
+    Prompting evolved from broad to highly constrained:
 
 ### Initial Prompts  
     ● General requests (e.g., “Roman numeral converter in Java”)
