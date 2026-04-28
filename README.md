@@ -14,12 +14,13 @@
 - [API Documentation](#api-documentation)
 - [Testing Methodology](#testing-methodology)
 - [Error Handling](#error-handling)
-- [Observability](#observabilit)
+- [Observability](#observability)
 - [Future Enhancements](#future-enhancements)
 
 ------------------------------------------------------------------------
 ## Architecture Over View
 <img src="images/architecture.png" width="800"/>
+------------------------------------------------------------------------
 
 ## 🛠️ Technology Stack
 
@@ -34,7 +35,7 @@
 | Orchestration | Kubernetes | 1.27+ |
 | CI/CD | GitHub Actions | -     |
 | Code Quality | SonarQube, JaCoCo | Latest |
-
+------------------------------------------------------------------------
 ## 🚀 Building the Application
 
 ### Prerequisites
@@ -60,7 +61,7 @@ mvn clean verify
 mvn clean package -DskipTests
 
 ```
-
+------------------------------------------------------------------------
 ## 🚀 Running the Application
 
 <img src="images/method.png" width="800"/>
@@ -96,56 +97,53 @@ docker run -p 8080:8080 roman-numerals:latest
     cd observability
     docker-compose up -d
 ```
-
-## 🧪 API Documentation
-    You can test the API using curl or any HTTP client (e.g., Postman, Insomnia).
-    Here’s an example of how to call the API:
-Mac
-``` bash
-Success Flow:
-
-curl http://localhost:8080/romannumeral?query=42
-
-Error Flow:
-
-curl http://localhost:8080/romannumeral?query=300
-curl http://localhost:8080/romannumeral?query=abc
-curl http://localhost:8080/romannumeral?query=
-
-```
-Windows (PowerShell)
-``` powershell
-Success Flow:
-curl.exe -i "http://localhost:8080/romannumeral?query=42"
-
-Error Flow:
-curl.exe -i "http://localhost:8080/romannumeral?query=300"
-curl.exe -i "http://localhost:8080/romannumeral?query=abc"
-curl.exe -i "http://localhost:8080/romannumeral?query="
-```
-### Success Response (200):
-    Response:
-    
-    ``` json
-    {
-      "input": "42",
-      "output": "XLII"
-    }
-```
-### Error Response (400)
-
- ``` 
-    {
-      "timestamp": "2026-04-27T00:00:00Z",
-      "status": 400,
-      "error": "Bad Request",
-      "message": "Query range must be between 1 and 255"
-    }
-```
 ------------------------------------------------------------------------
-
-
-
+## 🧪 API Documentation
+        You can test the API using curl or any HTTP client (e.g., Postman, Insomnia).
+        Here’s an example of how to call the API:
+        Mac
+    ``` bash
+    Success Flow:
+    
+    curl http://localhost:8080/romannumeral?query=42
+    
+    Error Flow:
+    
+    curl http://localhost:8080/romannumeral?query=300
+    curl http://localhost:8080/romannumeral?query=abc
+    curl http://localhost:8080/romannumeral?query=
+    
+    ```
+    Windows (PowerShell)
+    ``` powershell
+    Success Flow:
+    curl.exe -i "http://localhost:8080/romannumeral?query=42"
+    
+    Error Flow:
+    curl.exe -i "http://localhost:8080/romannumeral?query=300"
+    curl.exe -i "http://localhost:8080/romannumeral?query=abc"
+    curl.exe -i "http://localhost:8080/romannumeral?query="
+    ```
+    ### Success Response (200):
+        Response:
+        
+        ``` json
+        {
+          "input": "42",
+          "output": "XLII"
+        }
+    ```
+    ### Error Response (400)
+    
+     ``` 
+        {
+          "timestamp": "2026-04-27T00:00:00Z",
+          "status": 400,
+          "error": "Bad Request",
+          "message": "Query range must be between 1 and 255"
+        }
+    ```
+------------------------------------------------------------------------
 
 ## ⚙️ Engineering Methodology
 
@@ -173,17 +171,9 @@ curl.exe -i "http://localhost:8080/romannumeral?query="
      ● Production-Ready Configuration — Kubernetes manifests include health probes
     (liveness, readiness, startup), HPA, PDB, RBAC, network policies, and security contexts.
 
-## Inline Documentation
-
-### All source classes include Javadoc comments documenting:
-    ● Class-level purpose and design rationale
-    ● Method-level @param, @return, and @throws contracts
-    ● Inline comments for non-obvious logic
-
 ------------------------------------------------------------------------
 
 ## Testing Methodology
-
 
 ## Running Tests
 ``` bash
