@@ -20,7 +20,7 @@
 
 ------------------------------------------------------------------------
 ## Architecture
-![Architecture](images/architecture.jpeg)
+<img src="images/Architecture.jpeg" width="800"/>
 
 ## 🚀 Quick Start
 
@@ -50,7 +50,7 @@ mvn clean package -DskipTests
 
 ## 🚀 Running the Application
 
-![Running the Application](images/architecture.jpeg)
+<img src="images/method.jpeg" width="800"/>
 
 ### Method 1: Run Locally with Maven
 
