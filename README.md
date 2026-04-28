@@ -18,7 +18,7 @@
 - [Future Enhancements](#future-enhancements)
 
 ------------------------------------------------------------------------
-## Architecture Over View
+## Architecture Overview
 <img src="images/architecture.png" width="800"/>
 ------------------------------------------------------------------------
 
@@ -243,7 +243,7 @@ docker run -p 8080:8080 roman-numerals:latest
         5. Notification - Build status reporting via GitHub Checks and optional Slack integration.
 -----------------------------------------------------------------------------------
 ## 📊 Observability
-    <img src="images/grafana/grafana-dashboard.png" width="800"/>
+<img src="images/grafana/grafana-dashboard.png" width="800"/>
 ### Metrics (Prometheus + Grafana)
     ● Micrometer exports application metrics to the /actuator/prometheus endpoint.
     ● Prometheus scrapes metrics at a configured interval.
