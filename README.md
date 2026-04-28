@@ -6,23 +6,36 @@
 ------------------------------------------------------------------------
 
 ## 📚 Table of Contents
-    -   ![Architecture Diagram](images/Architecture.jpeg)
-    -   Quick Start (#Quick Start)
-    -   ![Running the Application](images/method.jpeg)
-    -   API Reference
-    -   Engineering Methodology
-    -   Testing Methodology
-    -   Error Handling
-    -   Project Layout
-    -   Observability
-    -   CI/CD (GitHub Actions)
-    -   Future Enhancements
+- [Architecture Overview](#architecture-overview)
+- [Technology Stack](#technology-stack)
+- [Project Structure](#project-structure)
+- [Building the Application](#building-the-application)
+- [Running the Application](#running-the-application)
+- [API Documentation](#api-documentation)
+- [Testing Methodology](#testing-methodology)
+- [Error Handling](#error-handling)
+- [Observability](#observabilit)
+- [Future Enhancements](#future-enhancements)
 
 ------------------------------------------------------------------------
-## Architecture
-<img src="images/Architecture.jpeg" width="800"/>
+## Architecture Over View
+<img src="images/architecture.png" width="800"/>
 
-## 🚀 Quick Start
+## 🛠️ Technology Stack
+
+| Component | Technology | Version |
+|-----------|-----------|-------|
+| Language | Java | 17    |
+| Framework | Spring Boot | 3.2.0 |
+| Build Tool | Maven | 3.9.2 |
+| Testing | JUnit 5, Mockito, REST Assured | Latest |
+| Observability | Spring Actuator, Prometheus, Micrometer | Latest |
+| Containerization | Docker | Latest |
+| Orchestration | Kubernetes | 1.27+ |
+| CI/CD | GitHub Actions | -     |
+| Code Quality | SonarQube, JaCoCo | Latest |
+
+## 🚀 Building the Application
 
 ### Prerequisites
     Before starting, make sure you have the following installed in your local environment:
@@ -30,7 +43,7 @@
         -   Maven 3.9+ (or use the included Maven wrapper `./mvnw`)
         -   Docker (optional for observability stack)
 
-### Build the Project
+### Build
 
 ```bash
 # Clone the repository
@@ -50,7 +63,7 @@ mvn clean package -DskipTests
 
 ## 🚀 Running the Application
 
-<img src="images/method.jpeg" width="800"/>
+<img src="images/method.png" width="800"/>
 
 ### Method 1: Run Locally with Maven
 
@@ -84,17 +97,33 @@ docker run -p 8080:8080 roman-numerals:latest
     docker-compose up -d
 ```
 
-## 🧪 Test the API
+## 🧪 API Documentation
     You can test the API using curl or any HTTP client (e.g., Postman, Insomnia).
     Here’s an example of how to call the API:
 Mac
 ``` bash
+Success Flow:
+
 curl http://localhost:8080/romannumeral?query=42
+
+Error Flow:
+
+curl http://localhost:8080/romannumeral?query=300
+curl http://localhost:8080/romannumeral?query=abc
+curl http://localhost:8080/romannumeral?query=
+
 ```
 Windows (PowerShell)
 ``` powershell
+Success Flow:
 curl.exe -i "http://localhost:8080/romannumeral?query=42"
+
+Error Flow:
+curl.exe -i "http://localhost:8080/romannumeral?query=300"
+curl.exe -i "http://localhost:8080/romannumeral?query=abc"
+curl.exe -i "http://localhost:8080/romannumeral?query="
 ```
+### Success Response (200):
     Response:
     
     ``` json
@@ -103,40 +132,20 @@ curl.exe -i "http://localhost:8080/romannumeral?query=42"
       "output": "XLII"
     }
 ```
+### Error Response (400)
 
+ ``` 
+    {
+      "timestamp": "2026-04-27T00:00:00Z",
+      "status": 400,
+      "error": "Bad Request",
+      "message": "Query range must be between 1 and 255"
+    }
+```
 ------------------------------------------------------------------------
 
-## 📘 API Reference
 
-### GET `/romannumeral?query={integer}`
 
-    Converts an integer to Roman numeral.
-
-#### Parameters
-
-      Name    Type     Required   Description
-      ------- -------- ---------- ------------------
-      query   string   Yes        Integer (1--255)
-
-#### Success Response (200)
-
-``` json
-{
-  "input": "42",
-  "output": "XLII"
-}
-```
-
-#### Error Response (400)
-
-``` json
-{
-  "timestamp": "2026-04-27T00:00:00Z",
-  "status": 400,
-  "error": "Bad Request",
-  "message": "Query range must be between 1 and 255"
-}
-```
 
 ## ⚙️ Engineering Methodology
 
@@ -243,8 +252,8 @@ curl.exe -i "http://localhost:8080/romannumeral?query=42"
         4. Code Quality - SonarQube static analysis
         5. Notification - Build status reporting via GitHub Checks and optional Slack integration.
 -----------------------------------------------------------------------------------
-## 📊 Full Observability Stack
-
+## 📊 Observability
+    <img src="images/grafana/grafana-dashboard.png" width="800"/>
 ### Metrics (Prometheus + Grafana)
     ● Micrometer exports application metrics to the /actuator/prometheus endpoint.
     ● Prometheus scrapes metrics at a configured interval.
@@ -279,7 +288,7 @@ curl.exe -i "http://localhost:8080/romannumeral?query=42"
 
 ------------------------------------------------------------------------
 
-## 📁 Project Layout
+## 📁 Project Structure
 
     roman-numerals/
     ├── pom.xml                                  # Maven build config & dependency management
