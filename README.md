@@ -6,9 +6,9 @@
 ------------------------------------------------------------------------
 
 ## 📚 Table of Contents
-    -   ![Architecture Diagram](images/Architecture.png)
+    -   ![Architecture Diagram](images/Architecture.jpeg)
     -   Quick Start (#Quick Start)
-    -   ![Running the Application](images/method.png)
+    -   ![Running the Application](images/method.jpeg)
     -   API Reference
     -   Engineering Methodology
     -   Testing Methodology
@@ -20,7 +20,7 @@
 
 ------------------------------------------------------------------------
 ## Architecture
-![Architecture](images/architecture.png)
+![Architecture](images/architecture.jpeg)
 
 ## 🚀 Quick Start
 
@@ -50,7 +50,7 @@ mvn clean package -DskipTests
 
 ## 🚀 Running the Application
 
-![Running the Application](images/architecture.png)
+![Running the Application](images/architecture.jpeg)
 
 ### Method 1: Run Locally with Maven
 
