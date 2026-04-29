@@ -275,7 +275,7 @@ Preconfigued metrics dashboard is also available under Dashboards. To access fol
    You can filter logs using labels—for example, to view logs for the roman-numeral-converter service, apply the filter service="roman-numeral-converter", as shown below.
    ![img_10.png](images/grafana/grafana-app-logs-2.png)
 
-5. Traces: To view the traces, click on explorer in left panel and select Jaeger data source. Enter the trace id to see the traces of a request, you can get the trace id from the logs or from the metrics. For example, to view the traces for a request with trace id `d9b1c8e5f8a7b6c4`, you can enter the trace id in the search box and click on search to view the traces as shown below,
+5. Traces: To explore distributed traces, navigate to Explore from the left-hand panel and select the Jaeger data source. You can retrieve the relevant traceId from logs or metrics. Enter the traceId in the search field and execute the query to visualize the trace details for a specific request. For example, to view traces for the request with traceId = e370fa9a82fb65f4f554bdba20fa9772, enter the value in the search box and click Search, as illustrated below.
    ![img_11.png](images/grafana/grafana-traces.png)
 
 
