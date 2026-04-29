@@ -111,45 +111,44 @@ Output:
 }
 ```
 
-### Run Unit/Integration tests
+## Running Tests
+``` bash
+# Run all tests (unit + integration)
+    mvn clean test
 
-From application root directory, run
-> mvn clean install
+# Run full verification (includes integration tests)
+    mvn verify
+# Run a specific test class
+    mvn test -Dtest=RomanNumeralConverterServiceTest
+# Run load tests
+    mvn test -Dtest=RomanNumeralApiLoadTest
+``` 
+# Load Testing
+    The RomanNumeralApiLoadTest runs 400 requests with 20 concurrent threads, including a
+    warm-up phase. It asserts:
+        ● Zero failures across all requests
+        ● Average latency < 250ms
+        ● P95 latency < 500ms
+[img_4.png](images/load-test.png)
 
-```
-Test Cases:
+# Code Coverage
+    ● JaCoCo is configured with a 90% line coverage minimum enforced at build time.
+    ● Coverage report is generated at target/site/jacoco/index.html after running tests.
+# Generate and view coverage report
+    mvn clean test
+    open target/site/jacoco/index.html
 
-RomanNumeralConverterControllerTest
-- convertIntegerToRomanNumeral_Success - Happy day flow
-- convertIntegerToRomanNumeral_lessThanMinError - input number less than min value < 1
-- convertIntegerToRomanNumeral_greaterThanMaxError - input number greater than max value > 3999
-- convertIntegerToRomanNumeral_inputTypeMismatchError - input value not a valid int number - eg: String value like "plsFail"
-- convertIntegerToRomanNumeral_internalServerError - simulating RuntimeException
-
-RomanNumeralConverterServiceImplTest
-- convertIntegerToRomanNumeral_Success - multiple happy day assertions
-
-```
-
-### Run Acceptance tests
-
-1. Acceptance tests that can be integrated into the CI/CD pipeline with test cases required to certify the application
-   ready for deployment to next stage
-2. For this, make sure the application is running, because these tests are executed against the running application,
-   simulating a real world flow
-3. Use the below command, to run the acceptance tests,
-
-> mvn test -Dtest=IntegerToRomanNumeralConversionAT
-
-```
-Acceptance Test Cases
-
-IntegerToRomanNumeralConversionAT
-- testDefaultContentTypeIsJson - Validate response content type is application/jso
-- testIntegerToRomanNumeralConversion_Success - Happy day case to validate conversion of a valid int to roman numeral
-- testIntegerToRomanNumeralConversion_ValidationError_OutOfRange - Error case to validate out of range conversions. Valid range 1 to 3999
-- testIntegerToRomanNumeralConversion_ValidationError_InvalidDataType - Error case to validate invalid data type inputs. Valid data type int, range 1 to 3999
-```
+| Category    | Class                                   | Description                          |
+|-------------|------------------------------------------|--------------------------------------|
+| Unit Tests  | RomanNumeralConverterServiceTest         | Tests conversion logic               |
+| Unit Tests  | RomanNumeralsConstantsTest               | Verifies constant values             |
+| Unit Tests  | RomanNumeralControllerUnitTest           | Controller logic with mocked service |
+| WebMvc Tests| RomanNumeralControllerWebMvcTest         | HTTP layer testing                   |
+| Integration | RomanNumeralControllerIntegrationTest    | Full Spring Boot context             |
+| Integration | RomanNumeralsApplicationTests            | Application context loads            |
+| Exception   | GlobalExceptionHandlerTest               | Exception handling coverage          |
+| Load Tests  | RomanNumeralApiLoadTest                  | Concurrent load testing              |
+------------------------------------------------------------------------
 
 ## Sample API Request/Responses
 
@@ -295,23 +294,8 @@ The CI/CD pipeline includes:
     - Code coverage metrics
 
 ### Pipeline Status
-Sample rin from github actions,
+Sample workflow run from github actions,
 ![img_12.png](images/ci-cd.png)
-```
-Push to main
-    ↓
-Build & Test (parallel jobs)
-    ├── Unit Tests
-    ├── Integration Tests
-    └── Code Coverage
-    ↓
-Docker Build & Push
-    ↓
-Security Scanning
-    ↓
-Code Quality Analysis
-    ↓
-Notify
 ```
 
 ## Simple Performance testing results using Apache Bend

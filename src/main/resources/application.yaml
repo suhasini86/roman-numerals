@@ -27,8 +27,3 @@ management:
         enabled: true
         timeout: 10s
 
-logging:
-  level:
-    root: INFO
-    io.opentelemetry: DEBUG
-    io.micrometer: DEBUG
