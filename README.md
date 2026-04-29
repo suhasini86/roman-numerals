@@ -259,8 +259,16 @@ docker run -p 8080:8080 roman-numerals:latest
     2026-04-27 10:00:00.000 [http-nio-8080-exec-1] INFO  
     c.a.a.r.controller.RomanNumeralController traceId=abc123 spanId=def456 - Received...
 
-    To view the full observability stack with Prometheus metrics, Grafana dashboards, and OpenTelemetry tracing,
-    run the following command from the `observability` directory:
+### Log Aggregation (Grafana Loki + Promtail)
+    ● Grafana Loki provides a lightweight log aggregation system designed to work with Prometheus and Grafana.
+    ● Promtail is a log shipper that discovers targets and attaches labels to log streams, then sends them
+    to Loki for storage and querying.
+    ● All application logs are collected via Promtail and stored in Loki, accessible through Grafana.
+    ● Pre-built "Roman Numerals Logs (Loki)" dashboard displays real-time application logs with filtering
+    by container and job labels, including trace context for correlation with distributed traces.
+
+    To view the full observability stack with Prometheus metrics, Grafana dashboards, OpenTelemetry tracing,
+    and Loki log aggregation, run the following command from the `observability` directory:
 ``` bash
     cd observability
     docker compose up --build
@@ -275,6 +283,8 @@ docker run -p 8080:8080 roman-numerals:latest
       Prometheus              http://localhost:9090
     
       Grafana                 http://localhost:3000
+
+      Loki                    http://localhost:3100
 
 ------------------------------------------------------------------------
 
@@ -317,12 +327,19 @@ docker run -p 8080:8080 roman-numerals:latest
     ├── k8s/
     │   └── deployment.yaml                      # K8s manifests (Namespace, Deployment, Service, HPA, PDB, RBAC, NetworkPolicy)
     ├── observability/
-    │   ├── docker-compose.yml                   # Full observability stack (app + Prometheus + Grafana + OTel)
+    │   ├── docker-compose.yml                   # Full observability stack (app + Prometheus + Grafana + Loki + OTel)
     │   ├── prometheus/prometheus.yml            # Prometheus scrape config
     │   ├── grafana/                             # Pre-built Grafana dashboards
     │   │   ├── dashboards/
+    │   │   │   ├── roman-numerals-logs.json     # Loki-powered log visualization dashboard
+    │   │   │   └── ...
     │   │   └── provisioning/                    # Auto-provisioned datasources & dashboards
-    │   └── otel-collector-config.yaml           # OpenTelemetry Collector pipeline config
+    │   ├── loki/                                # Loki log aggregation
+    │   │   ├── loki-config.yml                  # Loki configuration
+    │   │   └── promtail-config.yml              # Promtail log shipper configuration
+    │   ├── otel/
+    │   │   └── otel-collector-config.yml        # OpenTelemetry Collector pipeline config
+    │   └── ...
     └── .github/workflows/
     └── ci-cd.yml                            # GitHub Actions CI/CD pipeline
 

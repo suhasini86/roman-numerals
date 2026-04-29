@@ -3,8 +3,9 @@ package com.adobe.aem.romannumerals.controller;
 import com.adobe.aem.romannumerals.constants.RomanNumeralsConstants;
 import com.adobe.aem.romannumerals.dto.RomanNumeralResponse;
 import com.adobe.aem.romannumerals.service.RomanNumeralConverterService;
+import io.micrometer.observation.annotation.Observed;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,34 +13,32 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * REST Controller for Roman Numeral API
+ * REST Controller for Roman Numeral conversion.
  *
- * Endpoint: GET /romannumeral?query={integer}
+ * <p>Endpoint: {@code GET /romannumeral?query={integer}}</p>
  * Range: 1-255 (with provision for 1-3999 in future)
+ *
+ * <p><All validation and conversion exceptions are propagated to
+ * @link com.adobe.aem.romannumerals.exception.GlobalExceptionHandler}.</p>
  */
 @Slf4j
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/romannumeral")
 public class RomanNumeralController {
 
     private final RomanNumeralConverterService converterService;
 
-    @Autowired
-    public RomanNumeralController(RomanNumeralConverterService converterService) {
-        this.converterService = converterService;
-    }
-
     /**
-     * Convert an integer to Roman numeral
+     * Convert an integer to its Roman numeral representation
      *
-     * @param query the integer value to convert (1-255)
+     * @param query the integer value as a string to convert (1-255)
      * @return JSON response with input and output
      */
+    @Observed(name = "romannumeral.convert", contextualName = "convert-to-roman")
     @GetMapping
     public ResponseEntity<RomanNumeralResponse> toRoman(@RequestParam(name = "query", required = true) String query) {
         log.info("Received request to convert: {}", query);
-
-        try {
             // validate and parse query param
             int number = parseQuery(query);
 
@@ -54,15 +53,6 @@ public class RomanNumeralController {
 
             log.info("Successfully converted {} to {}", query, romanNumeral);
             return ResponseEntity.ok(response);
-
-        } catch (RuntimeException e) {
-            if (e instanceof IllegalArgumentException) {
-                log.warn("Validation failed for query '{}': {}", query, e.getMessage());
-            } else {
-                log.error("Error converting query '{}': {}", query, e.getMessage());
-            }
-            throw e;
-        }
     }
 
     /**

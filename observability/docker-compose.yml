@@ -1,4 +1,31 @@
 services:
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: jaeger
+    ports:
+      - "16686:16686"
+      - "14268:14268"
+      - "9411:9411"
+    networks:
+      - roman-numerals-network
+    environment:
+      - COLLECTOR_ZIPKIN_HOST_PORT=:9411
+
+  otel-collector:
+     image: otel/opentelemetry-collector-contrib:latest
+     command: ["--config=/etc/otel-collector-config.yml"]
+     volumes:
+       - ./otel/otel-collector-config.yml:/etc/otel-collector-config.yml
+     ports:
+       - "4318:4318"
+       - "4317:4317"
+       - "13133:13133"
+     networks:
+       - roman-numerals-network
+     depends_on:
+       - jaeger
+     restart: unless-stopped
+
   app:
     image: roman-numerals:latest
     build:
@@ -9,10 +36,13 @@ services:
       - "8080:8080"
     environment:
       - OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=http://otel-collector:4318/v1/traces
+      - OTEL_EXPORTER_OTLP_TIMEOUT=10000
+      - OTEL_BSP_EXPORT_TIMEOUT=30000
     depends_on:
       - otel-collector
     networks:
       - roman-numerals-network
+    restart: unless-stopped
 
   prometheus:
     image: prom/prometheus:latest
@@ -24,32 +54,56 @@ services:
     networks:
       - roman-numerals-network
 
-  grafana:
-    image: grafana/grafana:latest
-    container_name: grafana
+  loki:
+    image: grafana/loki:latest
+    container_name: loki
     ports:
-      - "3000:3000"
+      - "3100:3100"
     volumes:
-      - ./grafana/provisioning:/etc/grafana/provisioning
-      - ./grafana/dashboards:/var/lib/grafana/dashboards
+      - ./loki/loki-config.yml:/etc/loki/local-config.yml
+      - loki-data:/loki
+    command: -config.file=/etc/loki/local-config.yml
+    networks:
+      - roman-numerals-network
+    restart: unless-stopped
+    user: root
+
+  promtail:
+    image: grafana/promtail:latest
+    container_name: promtail
+    volumes:
+      - ./loki/promtail-config.yml:/etc/promtail/config.yml
+      - /var/log:/var/log
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: -config.file=/etc/promtail/config.yml
     networks:
       - roman-numerals-network
     restart: unless-stopped
     depends_on:
-      - prometheus
-      - app
+      - loki
 
-  otel-collector:
-    image: otel/opentelemetry-collector-contrib:latest
-    command: ["--config=/etc/otel-collector-config.yml"]
-    volumes:
-      - ./otel/otel-collector-config.yml:/etc/otel-collector-config.yml
-    ports:
-      - "4318:4318"
-      - "4317:4317"
-    networks:
-      - roman-numerals-network
+  grafana:
+     image: grafana/grafana:latest
+     container_name: grafana
+     ports:
+       - "3000:3000"
+     volumes:
+       - ./grafana/provisioning:/etc/grafana/provisioning
+       - ./grafana/dashboards:/var/lib/grafana/dashboards
+     networks:
+       - roman-numerals-network
+     restart: unless-stopped
+     depends_on:
+       - prometheus
+       - loki
+       - jaeger
+       - app
+
 
 networks:
   roman-numerals-network:
     driver: bridge
+
+volumes:
+  loki-data:

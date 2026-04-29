@@ -1,5 +1,6 @@
 package com.adobe.aem.romannumerals.service;
 
+import io.micrometer.observation.annotation.Observed;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -30,6 +31,7 @@ public class RomanNumeralConverterService {
      * @return Roman numeral representation
      * @throws IllegalArgumentException if input is outside valid range
      */
+    @Observed(name = "romannumeral.converter", contextualName = "roman-conversion")
     public String toRoman(int number) {
         validateRange(number);
         return performRomanConversion(number);
