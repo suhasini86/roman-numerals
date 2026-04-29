@@ -9,14 +9,15 @@ into it's respective roman numeral representation.
 - [Architecture](#architecture)
 - [Frameworks and Technologies Used](#frameworks-and-technologies-used)
 - [Packaging Layout](#packaging-layout)
-- [How to build and deploy the stack?](#how-to-build-and-deploy-the-stack)
+- [How to build and deploy the application](#how-to-build-and-deploy-the-stack)
+- [Testing](#testing)
+- [Error Handling](#error-handling)
+- [CI/CD Pipeline](#cicd-pipeline)
 - [Observability](#observability)
 - [Sample API Request/Responses](#sample-api-requestresponses)
-- [Testing](#testing)
 - [Performance Testing](#simple-performance-testing-results-using-apache-bend)
-- [Error Handling](#error-handling)
 - [Future Improvements](#future-enhancements)
-- - [References](#references)
+- [References](#references)
 
 ## Architecture
 
@@ -91,6 +92,121 @@ docker-compose -f docker-compose.yml ps
 5. To run the application in stand-alone mode without any devops capabilities, just run
    the `RomanNumeralConverterApplication` class
 
+## Testing
+
+### Health check
+
+> http://localhost:8080/actuator/health
+
+### Sample test
+
+> http://localhost:8080/romannumeral?query=255
+
+Output:
+
+```
+{
+"input": "255",
+"output": "CCLV"
+}
+```
+
+### Run Unit/Integration tests
+
+From application root directory, run
+> mvn clean install
+
+```
+Test Cases:
+
+RomanNumeralConverterControllerTest
+- convertIntegerToRomanNumeral_Success - Happy day flow
+- convertIntegerToRomanNumeral_lessThanMinError - input number less than min value < 1
+- convertIntegerToRomanNumeral_greaterThanMaxError - input number greater than max value > 3999
+- convertIntegerToRomanNumeral_inputTypeMismatchError - input value not a valid int number - eg: String value like "plsFail"
+- convertIntegerToRomanNumeral_internalServerError - simulating RuntimeException
+
+RomanNumeralConverterServiceImplTest
+- convertIntegerToRomanNumeral_Success - multiple happy day assertions
+
+```
+
+### Run Acceptance tests
+
+1. Acceptance tests that can be integrated into the CI/CD pipeline with test cases required to certify the application
+   ready for deployment to next stage
+2. For this, make sure the application is running, because these tests are executed against the running application,
+   simulating a real world flow
+3. Use the below command, to run the acceptance tests,
+
+> mvn test -Dtest=IntegerToRomanNumeralConversionAT
+
+```
+Acceptance Test Cases
+
+IntegerToRomanNumeralConversionAT
+- testDefaultContentTypeIsJson - Validate response content type is application/jso
+- testIntegerToRomanNumeralConversion_Success - Happy day case to validate conversion of a valid int to roman numeral
+- testIntegerToRomanNumeralConversion_ValidationError_OutOfRange - Error case to validate out of range conversions. Valid range 1 to 3999
+- testIntegerToRomanNumeralConversion_ValidationError_InvalidDataType - Error case to validate invalid data type inputs. Valid data type int, range 1 to 3999
+```
+
+## Sample API Request/Responses
+
+### Successful Request
+
+```
+curl -X GET "http://localhost:8080/romannumeral?query=100"
+```
+
+### Successful Response
+
+```
+Http Status Code - 200
+{
+  "input": "100",
+  "output": "C"
+}
+```
+
+### Error Request
+
+```
+curl -X GET "http://localhost:8080/romannumeral?query=4000"
+```
+
+### Error Response
+
+```
+Http Status Code - 400
+{
+  "statusCode": 400,
+  "errorMessage": "Invalid input, enter an integer value in the range from 1 to 3999"
+}
+```
+
+## Error Handling
+
+    The GlobalExceptionHandler (@RestControllerAdvice) provides centralized, consistent error responses: .
+
+| Exception Type                          | HTTP Status| Scenario                                  |
+|-----------------------------------------|------------|-------------------------------------------|
+| MissingServletRequestParameterException | 400        | query parameter not provided              |
+| IllegalArgumentException                | 400        | Empty/blank query, or value outside range |
+| NumberFormatException                   | 400        | Non-numeric input (e.g., ?query=abc)      |
+| MethodArgumentTypeMismatchException     | 400        | Type mismatch on request parameter        |
+| HttpMessageNotReadableException         | 400        | Malformed request body                    |
+| Exception                               | 500        | Any unhandled exception                   |
+
+``` json
+{
+  "timestamp": "2026-04-27T00:00:00Z",
+  "status": 400,
+  "error": "Bad Request",
+  "message": "Query must be a valid integer"
+}
+```
+
 ## Observability
 
 This project includes simple observability to monitor application behavior using metrics, traces, and logs.
@@ -154,119 +270,47 @@ Application → Logback → Promtail → Loki → Grafana
    ![img_11.png](images/grafana/grafana-traces.png)
 
 
-## Sample API Request/Responses
+## CI/CD Pipeline
 
-### Successful Request
+### GitHub Actions Workflow
 
-```
-curl -X GET "http://localhost:8080/romannumeral?query=100"
-```
+The CI/CD pipeline includes:
 
-### Successful Response
+1. **Build & Test**
+    - Compile code
+    - Run unit tests
+    - Run integration tests
+    - Code coverage
 
-```
-Http Status Code - 200
-{
-  "input": "100",
-  "output": "C"
-}
-```
+2. **Docker Build & Push**
+    - Build multi-stage Docker image
+    - Push to container registry
 
-### Error Request
+3. **Security Scanning**
+    - Trivy vulnerability scan
+    - SARIF report upload
 
-```
-curl -X GET "http://localhost:8080/romannumeral?query=4000"
-```
+4. **Code Quality**
+    - SonarQube analysis
+    - Code coverage metrics
 
-### Error Response
-
-```
-Http Status Code - 400
-{
-  "statusCode": 400,
-  "errorMessage": "Invalid input, enter an integer value in the range from 1 to 3999"
-}
-```
-
-## Testing
-
-### Health check
-
-> http://localhost:8080/actuator/health
-
-### Sample test
-
-> http://localhost:8080/romannumeral?query=255
-
-Output:
+### Pipeline Status
 
 ```
-{
-"input": "255",
-"output": "CCLV"
-}
-```
-
-### Run Unit/Integration tests
-
-From application root directory, run
-> mvn clean install
-
-```
-Test Cases:
-
-RomanNumeralConverterControllerTest
-- convertIntegerToRomanNumeral_Success - Happy day flow
-- convertIntegerToRomanNumeral_lessThanMinError - input number less than min value < 1
-- convertIntegerToRomanNumeral_greaterThanMaxError - input number greater than max value > 3999
-- convertIntegerToRomanNumeral_inputTypeMismatchError - input value not a valid int number - eg: String value like "plsFail"
-- convertIntegerToRomanNumeral_internalServerError - simulating RuntimeException
-
-RomanNumeralConverterServiceImplTest
-- convertIntegerToRomanNumeral_Success - multiple happy day assertions
-
-```
-
-### Run Acceptance tests
-
-1. Acceptance tests that can be integrated into the CI/CD pipeline with test cases required to certify the application
-   ready for deployment to next stage
-2. For this, make sure the application is running, because these tests are executed against the running application,
-   simulating a real world flow
-3. Use the below command, to run the acceptance tests,
-
-> mvn test -Dtest=IntegerToRomanNumeralConversionAT
-
-```
-Acceptance Test Cases
-
-IntegerToRomanNumeralConversionAT
-- testDefaultContentTypeIsJson - Validate response content type is application/jso
-- testIntegerToRomanNumeralConversion_Success - Happy day case to validate conversion of a valid int to roman numeral
-- testIntegerToRomanNumeralConversion_ValidationError_OutOfRange - Error case to validate out of range conversions. Valid range 1 to 3999
-- testIntegerToRomanNumeralConversion_ValidationError_InvalidDataType - Error case to validate invalid data type inputs. Valid data type int, range 1 to 3999
-```
-
-## Error Handling
-
-    The GlobalExceptionHandler (@RestControllerAdvice) provides centralized, consistent error responses: .
-
-| Exception Type                          | HTTP Status| Scenario                                  |
-|-----------------------------------------|------------|-------------------------------------------|
-| MissingServletRequestParameterException | 400        | query parameter not provided              |
-| IllegalArgumentException                | 400        | Empty/blank query, or value outside range |
-| NumberFormatException                   | 400        | Non-numeric input (e.g., ?query=abc)      |
-| MethodArgumentTypeMismatchException     | 400        | Type mismatch on request parameter        |
-| HttpMessageNotReadableException         | 400        | Malformed request body                    |
-| Exception                               | 500        | Any unhandled exception                   |
-
-``` json
-{
-  "timestamp": "2026-04-27T00:00:00Z",
-  "status": 400,
-  "error": "Bad Request",
-  "message": "Query must be a valid integer"
-}
+Push to main
+    ↓
+Build & Test (parallel jobs)
+    ├── Unit Tests
+    ├── Integration Tests
+    └── Code Coverage
+    ↓
+Docker Build & Push
+    ↓
+Security Scanning
+    ↓
+Code Quality Analysis
+    ↓
+Notify
 ```
 
 ## Simple Performance testing results using Apache Bend
@@ -336,16 +380,12 @@ sh stopWholeStack.sh
     
     ● Validate min < max and both within range in the controller/service layer.
 
-
-
-
 ## References
 
 1. [Roman Numeral Wikipedia Reference](https://simple.wikipedia.org/wiki/Roman_numerals)
 2. [spring-boot](https://spring.io/projects/spring-boot)
 3. [docker-compose](https://docs.docker.com/compose/)
-4. [ELK Stack](https://www.elastic.co/webinars/getting-started-elasticsearch)
-5. [Prometheus & Grafana](https://grafana.com/docs/grafana/latest/getting-started/getting-started-prometheus/)
+4. [Prometheus & Grafana](https://grafana.com/docs/grafana/latest/getting-started/getting-started-prometheus/)
 
 
 
