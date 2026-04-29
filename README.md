@@ -272,12 +272,12 @@ Preconfigued metrics dashboard is also available under Dashboards. To access fol
 
 4. Logs: To access application logs, navigate to Drilldown → Logs from the left-hand panel. This view displays all available logs.
 
-![img_10.png](images/grafana/grafana-logs-1.png)
+    ![img_10.png](images/grafana/grafana-logs-1.png)
 
-You can filter logs using labels—for example, to view logs for the roman-numeral-converter service, apply the filter service="roman-numeral-converter", as shown below.
-![img_10.png](images/grafana/grafana-logs-2.png)
+    You can filter logs using labels—for example, to view logs for the roman-numeral-converter service, apply the filter service="roman-numeral-converter", as shown below.
+    ![img_10.png](images/grafana/grafana-logs-2.png)
 
-6. Traces: To explore distributed traces, navigate to Explore from the left-hand panel and select the Jaeger data source. You can retrieve the relevant traceId from logs or metrics. Enter the traceId in the search field and execute the query to visualize the trace details for a specific request. For example, to view traces for the request with traceId = e370fa9a82fb65f4f554bdba20fa9772, enter the value in the search box and click Search, as illustrated below.
+5. Traces: To explore distributed traces, navigate to Explore from the left-hand panel and select the Jaeger data source. You can retrieve the relevant traceId from logs or metrics. Enter the traceId in the search field and execute the query to visualize the trace details for a specific request. For example, to view traces for the request with traceId = e370fa9a82fb65f4f554bdba20fa9772, enter the value in the search box and click Search, as illustrated below.
    ![img_11.png](images/grafana/grafana-traces.png)
 
 
@@ -296,6 +296,9 @@ The CI/CD pipeline includes:
 2. **Docker Build & Push**
     - Build multi-stage Docker image
     - Push to container registry
+    - which can be used to deploy the application in any environment (dev, staging, prod)
+    - Docker hub registry screenshot:
+   - ![img_12.png](images/docker-hub-registry.png)
 
 3. **Security Scanning**
     - Trivy vulnerability scan
