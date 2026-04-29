@@ -12,7 +12,7 @@ AI Usage Explanation
 
 ## AI Tools Used  
     ● ChatGPT (prompting, design discussions)
-    ● Github Copilt premium models - Claude opus 
+    ● Github Copilt premium models - Claude Opus 4.6
         - Code generation, suggestions, test case generation, and refactoring recommendations.
         - Code review and validation were performed manually by me, without AI assistance.
 
@@ -61,7 +61,7 @@ AI Usage Explanation
     Prompting evolved from broad to highly constrained:
 
 ### Initial Prompts  
-    ● General requests (e.g., “As a seniore developer create a Roman numeral converter micropservice 
+    ● General requests (e.g., “As a seniore developer create a Roman numeral converter microoservice 
     with Spring Boot and Java17”)
 
 ### Refined Prompts  

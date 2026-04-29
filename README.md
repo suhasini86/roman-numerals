@@ -82,8 +82,6 @@ docker-compose -f docker-compose.yml ps
 4. Verify if the deployed services are up and running,
 
 > roman-numeral-converter App - http://localhost:8080/actuator/health
->
-> REST API specs - http://localhost:8080/swagger-ui.html
 > 
 > Prometheus - http://localhost:9090/
 >
