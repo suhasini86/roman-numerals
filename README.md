@@ -179,7 +179,7 @@ curl -X GET "http://localhost:8080/romannumeral?query=200"
 ```
 Http Status Code - 200
 {
-  "input": "100",
+  "input": "200",
   "output": "CC"
 }
 ```
@@ -266,7 +266,7 @@ Application → Logback → Promtail → Loki → Grafana
 
 3. Metrics: To explore application metrics, navigate to Drilldown → Metrics from the left-hand panel. This view displays all available metrics. You can refine the results using the search bar—for example, enter http.server.requests to view HTTP server request metrics, as illustrated below.
 ![img_9.png](images/grafana/grafana-metrics.png)
-Preconfigued metrics dashboard is also available under Dashboards. To access follow the steps as shown in below screenshots,
+   Preconfigured metrics dashboard is also available under Dashboards. To access follow the steps as shown in below screenshots,
    ![img_10.png](images/grafana/custom-dashboard.png)
    ![img_10.png](images/grafana/custom-dashboard-2.png)
 
@@ -333,10 +333,10 @@ Sample workflow run from github actions,
 
 ### Rules:
 
-    ● Both min and max are required and must be valid integers=
+    ● Both min and max are required and must be valid integers
     ● min must be less than max
     ● Both must be within the supported range (1-255, or 1-3999 with Extension 1)
-    ● Conversions are computed in parallel using Java multithreading=
+    ● Conversions are computed in parallel using Java multithreading
     ● Results are returned in ascending order
 
     Example Request: GET /romannumeral?min=1&max=3
@@ -344,7 +344,7 @@ Sample workflow run from github actions,
     Example Response:
     {
     "conversions": [
-        { "input": "1", "output": "I" },=
+        { "input": "1", "output": "I" },
         { "input": "2", "output": "II" },
         { "input": "3", "output": "III" }
         ]
