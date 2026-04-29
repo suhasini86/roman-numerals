@@ -28,7 +28,7 @@ into it's respective roman numeral representation.
 | Component | Technology | Version |
 |-----------|-----------|---------|
 | Language | Java | 17      |
-| Framework | Spring Boot | 3.5.14  |
+| Framework | Spring Boot | 3.5.14  | 
 | Build Tool | Maven | 3.9.2   |
 | Testing | JUnit 5, Mockito, REST Assured | Latest  |
 | Observability | Spring Actuator, Prometheus, Micrometer | Latest  |
@@ -57,12 +57,12 @@ docker-compose -v
 mvn -v
 ```
 
-3.  Run the below commands to start the whole application stack along with the devops capabilities as shown in the architecture diagram.
+3.  Run the below commands to start the whole application stack along with the observability capabilities as shown in the architecture diagram.
    (Assuming that you're in the root directory of the application git repo, run the below commands)
 
 ```
 cd observability
-docker compose up --d
+docker-compose -f docker-compose.yml up --build
 ```
 
 The docker compose will spin the whole docker infra. The
@@ -71,8 +71,7 @@ shown below with status of various services,
 
 ![img_3.png](images/grafana/docker-compose-status.png)
 
-Use the below command to refresh the status of the services until you see all the services Up and elasticsearch, kibana
-and apm server reported as Up (healthy)
+Use the below command to refresh the status of the services until you see all the services Up
 
 ```
 docker-compose -f docker-compose.yml ps
@@ -82,12 +81,28 @@ docker-compose -f docker-compose.yml ps
 
 > roman-numeral-converter App - http://localhost:8080/actuator/health
 > 
+> Swagger UI - http://localhost:8080/swagger-ui.html
+> 
+> OpenAPI Specification - http://localhost:8080/v3/api-docs
+> 
 > Prometheus - http://localhost:9090/
 >
 > Grafana - http://localhost:3000/
+> 
+> Jaeger - http://localhost:16686/
+> 
 
 5. To run the application in stand-alone mode without any devops capabilities, just run
-   the `RomanNumeralsApplication` class
+   the `RomanNumeralsApplication`class
+``` bash
+powershell
+> $env:SPRING_PROFILES_ACTIVE = "standalone"
+> mvn: spring-boot:run
+mac
+> export SPRING_PROFILES_ACTIVE=standalone
+> mvn spring-boot:run
+
+```
 
 ## Testing
 
@@ -110,6 +125,8 @@ Output:
 
 ## Running Tests
 ``` bash
+From application root directory: 
+
 # Run all tests (unit + integration)
     mvn clean test
 
@@ -120,18 +137,20 @@ Output:
 # Run load tests
     mvn test -Dtest=RomanNumeralApiLoadTest
 ``` 
-# Load Testing
+
+### Load Testing
     The RomanNumeralApiLoadTest runs 400 requests with 20 concurrent threads, including a
     warm-up phase. It asserts:
         ● Zero failures across all requests
         ● Average latency < 250ms
         ● P95 latency < 500ms
+
 ![img_4.png](images/load-test.png)
 
-# Code Coverage
+### Code Coverage
     ● JaCoCo is configured with a 90% line coverage minimum enforced at build time.
     ● Coverage report is generated at target/site/jacoco/index.html after running tests.
-# Generate and view coverage report
+### Generate and view coverage report
     mvn clean test
     open target/site/jacoco/index.html
 
@@ -152,7 +171,7 @@ Output:
 ### Successful Request
 
 ```
-curl -X GET "http://localhost:8080/romannumeral?query=100"
+curl -X GET "http://localhost:8080/romannumeral?query=200"
 ```
 
 ### Successful Response
@@ -161,14 +180,14 @@ curl -X GET "http://localhost:8080/romannumeral?query=100"
 Http Status Code - 200
 {
   "input": "100",
-  "output": "C"
+  "output": "CC"
 }
 ```
 
 ### Error Request
 
 ```
-curl -X GET "http://localhost:8080/romannumeral?query=4000"
+curl -X GET "http://localhost:8080/romannumeral?query=abc"
 ```
 
 ### Error Response
@@ -176,8 +195,10 @@ curl -X GET "http://localhost:8080/romannumeral?query=4000"
 ```
 Http Status Code - 400
 {
-  "statusCode": 400,
-  "errorMessage": "Invalid input, enter an integer value in the range from 1 to 3999"
+  "timestamp": "2026-04-27T00:00:00Z",
+  "status": 400,
+  "error": "Bad Request",
+  "message": "Query must be a valid integer"
 }
 ```
 
@@ -215,28 +236,19 @@ This project includes simple observability to monitor application behavior using
     - Request count
     - Response time
     - Error rates
-- Visualized in :contentReference[oaicite:0]{index=0}
-
 ### Traces
 - Distributed tracing is enabled using OpenTelemetry
-- Traces are sent to collector and viewed in :contentReference[oaicite:1]{index=1}
 - Helps track request flow
-
 ### Logs
 - Logs are generated using Logback
 - Includes `traceId` and `spanId`
 - Logs are sent using Promtail → Loki → Grafana
-
 ---
-
 ### Data Flow
-
 ### Metrics
 Application → Actuator → Prometheus → Grafana
-
 ### Traces
 Application → OpenTelemetry → Collector → Jaeger
-
 ### Logs
 Application → Logback → Promtail → Loki → Grafana
 
@@ -246,20 +258,21 @@ Application → Logback → Promtail → Loki → Grafana
 
 > http://localhost:3000/
 
-1. Default username/password for Grafana is admin/admin, you might want to setup a new password when logging in for the
-   first time. After logging in, you should see a home screen like below.`,
+1. The default Grafana credentials are admin/admin. For security purposes, you will be prompted to set a new password upon your first login. After successfully signing in, you should see a home screen similar to the one shown below.
    ![img_8.png](images/grafana/grafana-main-screen.png)
 
-2. Have Preconfigured data sources for Prometheus, Loki and Jaeger. Click on data sources under configuration in left panel, to view the preconfigured data sources.
-   ![img_9.png](images/grafana/grafana-navigation.png) 
-![img_9.png](images/grafana/grafana-datasource.png)
+2. Preconfigured data sources for Prometheus, Loki, and Jaeger are already available. To review them, navigate to Configuration → Data Sources from the left-hand panel, where you can view and manage the existing configurations.
+![img_10.png](images/grafana/grafana-datasource.png)
 
-
-3. Metrics: To view the metrics, click on Metrics under Drilldown in left panel and select Metrics, will display all the metrics. You can also filter the metrics by name, for example, to view the http server request metrics, you can search for `http.server.requests` metric as shown below,
+3. Metrics: To explore application metrics, navigate to Drilldown → Metrics from the left-hand panel. This view displays all available metrics. You can refine the results using the search bar—for example, enter http.server.requests to view HTTP server request metrics, as illustrated below.
    ![img_9.png](images/grafana/grafana-metrics.png)
+Preconfigued metrics dashboard is also available under Dashboards. To access follow the steps as shown in below screenshots,
+   ![img_10.png](images/grafana/custom-dashboard.png)
+   ![img_10.png](images/grafana/custom-dashboard-2.png)
 
-4. Logs: To view the logs, click on Logs under Drilldown in left panel and select Logs, will display all the logs. You can also filter the logs by service name, for example, to view the logs for roman-numeral-converter service, you can search for `service="roman-numeral-converter"` as shown below,
+4. Logs: To access application logs, navigate to Drilldown → Logs from the left-hand panel. This view displays all available logs.
    ![img_10.png](images/grafana/grafana-app-logs-1.png)
+   You can filter logs using labels—for example, to view logs for the roman-numeral-converter service, apply the filter service="roman-numeral-converter", as shown below.
    ![img_10.png](images/grafana/grafana-app-logs-2.png)
 
 5. Traces: To view the traces, click on explorer in left panel and select Jaeger data source. Enter the trace id to see the traces of a request, you can get the trace id from the logs or from the metrics. For example, to view the traces for a request with trace id `d9b1c8e5f8a7b6c4`, you can enter the trace id in the search box and click on search to view the traces as shown below,

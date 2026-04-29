@@ -1,19 +1,27 @@
 package com.adobe.aem.romannumerals.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 
 import java.time.Instant;
 
 /**
- * Response DTO for error responses containing timne stamp, status, error type and message
- * */
-
+ * Response DTO for error responses containing timestamp, status, error type, and message.
+ */
 @Getter
+@Schema(description = "Error response returned for invalid requests or server errors")
 public class ErrorResponse {
 
+    @Schema(description = "Timestamp when the error occurred", example = "2026-04-28T12:00:00Z")
     private Instant timestamp;
+
+    @Schema(description = "HTTP status code", example = "400")
     private int status;
+
+    @Schema(description = "HTTP error reason phrase", example = "Bad Request")
     private String error;
+
+    @Schema(description = "Human-readable error message", example = "Query range must be between 1 and 255")
     private String message;
 
     public ErrorResponse(Instant timestamp, int status, String error, String message) {
@@ -22,5 +30,4 @@ public class ErrorResponse {
         this.error = error;
         this.message = message;
     }
-
 }
