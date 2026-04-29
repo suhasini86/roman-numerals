@@ -1,214 +1,189 @@
-# Roman Numerals Converter API
+# roman-numeral-converter
 
-    A production-ready Spring Boot REST API that converts integers to Roman
-    numerals, with full observability and  docker containerization support.
+**roman-numeral-converter** is a java based spring-boot application that exposes a GET based REST API to convert integer
+into it's respective roman numeral representation.
+> Developed by: Suhasini Pamidi
 
-------------------------------------------------------------------------
+## Table of Contents
 
-## 📚 Table of Contents
-- [Architecture Overview](#architecture-overview)
-- [Technology Stack](#technology-stack)
-- [Project Structure](#project-structure)
-- [Building the Application](#building-the-application)
-- [Running the Application](#running-the-application)
-- [API Documentation](#api-documentation)
-- [Testing Methodology](#testing-methodology)
+- [Architecture](#architecture)
+- [Frameworks and Technologies Used](#frameworks-and-technologies-used)
+- [Packaging Layout](#packaging-layout)
+- [How to build and deploy the application](#how-to-build-and-deploy-the-stack)
+- [Testing](#testing)
 - [Error Handling](#error-handling)
+- [CI/CD Pipeline](#cicd-pipeline)
 - [Observability](#observability)
-- [Future Enhancements](#future-enhancements)
+- [Sample API Request/Responses](#sample-api-requestresponses)
+- [Performance Testing](#simple-performance-testing-results-using-apache-bend)
+- [Future Improvements](#future-enhancements)
+- [References](#references)
 
-------------------------------------------------------------------------
-## Architecture Overview
-<img src="images/architecture.png" width="800"/>
-------------------------------------------------------------------------
+## Architecture
 
-## 🛠️ Technology Stack
+![img_1.png](images/architecture.png)
+
+## Frameworks and Technologies Used
+
 
 | Component | Technology | Version |
-|-----------|-----------|-------|
-| Language | Java | 17    |
-| Framework | Spring Boot | 3.2.0 |
-| Build Tool | Maven | 3.9.2 |
-| Testing | JUnit 5, Mockito, REST Assured | Latest |
-| Observability | Spring Actuator, Prometheus, Micrometer | Latest |
-| Containerization | Docker | Latest |
-| Orchestration | Kubernetes | 1.27+ |
-| CI/CD | GitHub Actions | -     |
-| Code Quality | SonarQube, JaCoCo | Latest |
-------------------------------------------------------------------------
-## 🚀 Building the Application
+|-----------|-----------|---------|
+| Language | Java | 17      |
+| Framework | Spring Boot | 3.5.14  |
+| Build Tool | Maven | 3.9.2   |
+| Testing | JUnit 5, Mockito, REST Assured | Latest  |
+| Observability | Spring Actuator, Prometheus, Micrometer | Latest  |
+| Containerization | Docker | Latest  |
+| CI/CD | GitHub Actions | -       |
+| Code Quality | SonarQube, JaCoCo | Latest  |
 
-### Prerequisites
-    Before starting, make sure you have the following installed in your local environment:
-        -   Java 17+
-        -   Maven 3.9+ (or use the included Maven wrapper `./mvnw`)
-        -   Docker (optional for observability stack)
+## Packaging Layout
 
-### Build
+![img_2.png](images/packaging.png)
 
-```bash
-# Clone the repository
+## How to build and deploy the stack?
+
+1. Clone the git repo
+
+```
 git clone https://github.com/suhasini86/roman-numerals.git
-cd roman-numerals
-
-# Build the project with Maven
-mvn clean install
-
-# Build with tests
-mvn clean verify
-
-# Skip tests (not recommended for production)
-mvn clean package -DskipTests
-
-```
-------------------------------------------------------------------------
-## 🚀 Running the Application
-
-<img src="images/method.png" width="400"/>
-
-### Method 1: Run Locally with Maven
-
-```bash
-mvn spring-boot:run
 ```
 
-### Method 2: Run with Java
+2. Pre-requisite checks for required frameworks
 
-```bash
-mvn clean package
-java -jar target/roman-numerals-1.0.0.jar
+```
+java -version
+docker -v
+docker-compose -v
+mvn -v
 ```
 
-### Method 3: Docker
-    To build and run the application in a Docker container, make sure you have Docker installed and running on your machine, then execute the following commands:
-```bash
-# Build image
-docker build -t roman-numerals:latest .
+3.  Run the below commands to start the whole application stack along with the devops capabilities as shown in the architecture diagram.
+   (Assuming that you're in the root directory of the application git repo, run the below commands)
 
-# Run container
-docker run -p 8080:8080 roman-numerals:latest
+```
+cd observability
+docker compose up --d
 ```
 
-### Method 4: Docker Compose (with Prometheus and Grafana)
+The docker compose will spin the whole docker infra. The
+whole process should take around 2 to 3 mins depending on the underlying machine, you should see a similar output as
+shown below with status of various services,
 
-    To run the full observability stack with the API, Prometheus, Grafana, and OpenTelemetry Collector. 
-    Reference on how to access the dash boards were provided in the Observability section below.
-```bash
-    cd observability
-    docker-compose up -d
+![img_3.png](images/grafana/docker-compose-status.png)
+
+Use the below command to refresh the status of the services until you see all the services Up and elasticsearch, kibana
+and apm server reported as Up (healthy)
+
 ```
-------------------------------------------------------------------------
-## 🧪 API Documentation
-        You can test the API using curl or any HTTP client (e.g., Postman, Insomnia).
-        Here’s an example of how to call the API:
-        Mac
-    ``` bash
-    Success Flow:
-    
-    curl http://localhost:8080/romannumeral?query=42
-    
-    Error Flow:
-    
-    curl http://localhost:8080/romannumeral?query=300
-    curl http://localhost:8080/romannumeral?query=abc
-    curl http://localhost:8080/romannumeral?query=
-    
-    ```
-    Windows (PowerShell)
-    ``` powershell
-    Success Flow:
-    curl.exe -i "http://localhost:8080/romannumeral?query=42"
-    
-    Error Flow:
-    curl.exe -i "http://localhost:8080/romannumeral?query=300"
-    curl.exe -i "http://localhost:8080/romannumeral?query=abc"
-    curl.exe -i "http://localhost:8080/romannumeral?query="
-    ```
-    ### Success Response (200):
-        Response:
-        
-        ``` json
-        {
-          "input": "42",
-          "output": "XLII"
-        }
-    ```
-    ### Error Response (400)
-    
-     ``` 
-        {
-          "timestamp": "2026-04-27T00:00:00Z",
-          "status": 400,
-          "error": "Bad Request",
-          "message": "Query range must be between 1 and 255"
-        }
-    ```
-------------------------------------------------------------------------
+docker-compose -f docker-compose.yml ps
+```
 
-## ⚙️ Engineering Methodology
+4. Verify if the deployed services are up and running,
 
-### Design Principles
-    ● Separation of Concerns — Clear layering: Controller → Service → Constants. The
-    controller handles HTTP concerns (parsing, response building), the service owns
-    business logic (validation, conversion), and constants are centralized in a single class.
-    
-    ● Greedy Algorithm — The Roman numeral conversion uses a greedy subtraction
-    algorithm with parallel value/symbol arrays. This is O(1) — bounded by 13 symbol
-    iterations regardless of input — making it highly efficient and easy to extend.
+> roman-numeral-converter App - http://localhost:8080/actuator/health
+>
+> REST API specs - http://localhost:8080/swagger-ui.html
+> 
+> Prometheus - http://localhost:9090/
+>
+> Grafana - http://localhost:3000/
 
-    ●  Defensive Input Handling — Input is accepted as a String, trimmed, and validated at
-    multiple layers (empty/blank check in controller, range check in service) before
-    conversion.
+5. To run the application in stand-alone mode without any devops capabilities, just run
+   the `RomanNumeralConverterApplication` class
 
-     ● Centralized Error Handling — A @RestControllerAdvice (GlobalExceptionHandler)
-    catches all exception types and maps them to structured JSON error responses with
-    consistent format, timestamps, and HTTP status codes.
+## Testing
 
-     ● Observability-First — Integrated from the start with Micrometer, OpenTelemetry tracing,
-    and Prometheus metrics. Distributed trace IDs (traceId, spanId) are injected into every log
-    line via the logback pattern.
+### Health check
 
-     ● Production-Ready Configuration — Kubernetes manifests include health probes
-    (liveness, readiness, startup), HPA, PDB, RBAC, network policies, and security contexts.
+> http://localhost:8080/actuator/health
 
-------------------------------------------------------------------------
+### Sample test
 
-## Testing Methodology
+> http://localhost:8080/romannumeral?query=255
 
-## Running Tests
-``` bash
-# Run all tests (unit + integration)
-    ./mvnw clean test
-    
-# Run full verification (includes integration tests)
-    ./mvnw verify
-# Run a specific test class
-    ./mvnw test -Dtest=RomanNumeralConverterServiceTest
-``` 
-# Code Coverage
-    ● JaCoCo is configured with a 90% line coverage minimum enforced at build time.
-    ● Coverage report is generated at target/site/jacoco/index.html after running tests.
-# Generate and view coverage report
-    ./mvnw clean test
-    open target/site/jacoco/index.html
-# Load Testing
-    The RomanNumeralApiLoadTest runs 400 requests with 20 concurrent threads, including a
-    warm-up phase. It asserts:
-        ● Zero failures across all requests
-        ● Average latency < 250ms
-        ● P95 latency < 500ms
+Output:
 
-| Category    | Class                                   | Description                          |
-|-------------|------------------------------------------|--------------------------------------|
-| Unit Tests  | RomanNumeralConverterServiceTest         | Tests conversion logic               |
-| Unit Tests  | RomanNumeralsConstantsTest               | Verifies constant values             |
-| Unit Tests  | RomanNumeralControllerUnitTest           | Controller logic with mocked service |
-| WebMvc Tests| RomanNumeralControllerWebMvcTest         | HTTP layer testing                   |
-| Integration | RomanNumeralControllerIntegrationTest    | Full Spring Boot context             |
-| Integration | RomanNumeralsApplicationTests            | Application context loads            |
-| Exception   | GlobalExceptionHandlerTest               | Exception handling coverage          |
-| Load Tests  | RomanNumeralApiLoadTest                  | Concurrent load testing              |
-------------------------------------------------------------------------
+```
+{
+"input": "255",
+"output": "CCLV"
+}
+```
+
+### Run Unit/Integration tests
+
+From application root directory, run
+> mvn clean install
+
+```
+Test Cases:
+
+RomanNumeralConverterControllerTest
+- convertIntegerToRomanNumeral_Success - Happy day flow
+- convertIntegerToRomanNumeral_lessThanMinError - input number less than min value < 1
+- convertIntegerToRomanNumeral_greaterThanMaxError - input number greater than max value > 3999
+- convertIntegerToRomanNumeral_inputTypeMismatchError - input value not a valid int number - eg: String value like "plsFail"
+- convertIntegerToRomanNumeral_internalServerError - simulating RuntimeException
+
+RomanNumeralConverterServiceImplTest
+- convertIntegerToRomanNumeral_Success - multiple happy day assertions
+
+```
+
+### Run Acceptance tests
+
+1. Acceptance tests that can be integrated into the CI/CD pipeline with test cases required to certify the application
+   ready for deployment to next stage
+2. For this, make sure the application is running, because these tests are executed against the running application,
+   simulating a real world flow
+3. Use the below command, to run the acceptance tests,
+
+> mvn test -Dtest=IntegerToRomanNumeralConversionAT
+
+```
+Acceptance Test Cases
+
+IntegerToRomanNumeralConversionAT
+- testDefaultContentTypeIsJson - Validate response content type is application/jso
+- testIntegerToRomanNumeralConversion_Success - Happy day case to validate conversion of a valid int to roman numeral
+- testIntegerToRomanNumeralConversion_ValidationError_OutOfRange - Error case to validate out of range conversions. Valid range 1 to 3999
+- testIntegerToRomanNumeralConversion_ValidationError_InvalidDataType - Error case to validate invalid data type inputs. Valid data type int, range 1 to 3999
+```
+
+## Sample API Request/Responses
+
+### Successful Request
+
+```
+curl -X GET "http://localhost:8080/romannumeral?query=100"
+```
+
+### Successful Response
+
+```
+Http Status Code - 200
+{
+  "input": "100",
+  "output": "C"
+}
+```
+
+### Error Request
+
+```
+curl -X GET "http://localhost:8080/romannumeral?query=4000"
+```
+
+### Error Response
+
+```
+Http Status Code - 400
+{
+  "statusCode": 400,
+  "errorMessage": "Invalid input, enter an integer value in the range from 1 to 3999"
+}
+```
 
 ## Error Handling
 
@@ -232,118 +207,127 @@ docker run -p 8080:8080 roman-numerals:latest
 }
 ```
 
-------------------------------------------------------------------------
-## CI/CD (GitHub Actions)
-    The .github/workflows/ci-cd.yml pipeline runs on push/PR to main and develop:
-        1. Build & Test - Compile, unit + integration tests, upload coverage to Codecov
-        2. Docker Build & Push - Build image and push to GitHub Container Registry (on push
-           only)
-        3. Security Scan - Trivy vulnerability scanning with SARIF upload to GitHub Security tab
-        4. Code Quality - SonarQube static analysis
-        5. Notification - Build status reporting via GitHub Checks and optional Slack integration.
------------------------------------------------------------------------------------
-## 📊 Observability
-<img src="images/grafana/grafana-dashboard.png" width="800"/>
-### Metrics (Prometheus + Grafana)
-    ● Micrometer exports application metrics to the /actuator/prometheus endpoint.
-    ● Prometheus scrapes metrics at a configured interval.
-    ● Grafana dashboards are auto-provisioned for visualizing. A custom dashboard is included for
-    the Roman numeral conversion API, showing request counts,latencies, and error rates.
-### Distributed Tracing (OpenTelemetry)
-    ● Micrometer Tracing Bridge integrates with OpenTelemetry to generate trace spans for
-    every request.
-    ● Traces are exported via OTLP HTTP to the OpenTelemetry Collector (port 4318).
-    ● traceId and spanId are injected into every log line for correlation.
-### Structured Logging
-    Log pattern includes trace context for end-to-end request correlation:
-    2026-04-27 10:00:00.000 [http-nio-8080-exec-1] INFO  
-    c.a.a.r.controller.RomanNumeralController traceId=abc123 spanId=def456 - Received...
+## Observability
 
-### Log Aggregation (Grafana Loki + Promtail)
-    ● Grafana Loki provides a lightweight log aggregation system designed to work with Prometheus and Grafana.
-    ● Promtail is a log shipper that discovers targets and attaches labels to log streams, then sends them
-    to Loki for storage and querying.
-    ● All application logs are collected via Promtail and stored in Loki, accessible through Grafana.
-    ● Pre-built "Roman Numerals Logs (Loki)" dashboard displays real-time application logs with filtering
-    by container and job labels, including trace context for correlation with distributed traces.
+This project includes simple observability to monitor application behavior using metrics, traces, and logs.
 
-    To view the full observability stack with Prometheus metrics, Grafana dashboards, OpenTelemetry tracing,
-    and Loki log aggregation, run the following command from the `observability` directory:
-``` bash
-    cd observability
-    docker compose up --build
+### Overview
+
+### Metrics
+- Metrics are exposed using Spring Boot Actuator and Micrometer
+- Prometheus collects:
+    - Request count
+    - Response time
+    - Error rates
+- Visualized in :contentReference[oaicite:0]{index=0}
+
+### Traces
+- Distributed tracing is enabled using OpenTelemetry
+- Traces are sent to collector and viewed in :contentReference[oaicite:1]{index=1}
+- Helps track request flow
+
+### Logs
+- Logs are generated using Logback
+- Includes `traceId` and `spanId`
+- Logs are sent using Promtail → Loki → Grafana
+
+---
+
+### Data Flow
+
+### Metrics
+Application → Actuator → Prometheus → Grafana
+
+### Traces
+Application → OpenTelemetry → Collector → Jaeger
+
+### Logs
+Application → Logback → Promtail → Loki → Grafana
+
+---
+
+### Grafana setup
+
+> http://localhost:3000/
+
+1. Default username/password for Grafana is admin/admin, you might want to setup a new password when logging in for the
+   first time. After logging in, you should see a home screen like below.`,
+   ![img_8.png](images/grafana/grafana-main-screen.png)
+
+2. Have Preconfigured data sources for Prometheus, Loki and Jaeger. Click on data sources under configuration in left panel, to view the preconfigured data sources.
+   ![img_9.png](images/grafana/grafana-navigation.png) 
+![img_9.png](images/grafana/grafana-datasource.png)
+
+
+3. Metrics: To view the metrics, click on Metrics under Drilldown in left panel and select Metrics, will display all the metrics. You can also filter the metrics by name, for example, to view the http server request metrics, you can search for `http.server.requests` metric as shown below,
+   ![img_9.png](images/grafana/grafana-metrics.png)
+
+4. Logs: To view the logs, click on Logs under Drilldown in left panel and select Logs, will display all the logs. You can also filter the logs by service name, for example, to view the logs for roman-numeral-converter service, you can search for `service="roman-numeral-converter"` as shown below,
+   ![img_10.png](images/grafana/grafana-app-logs-1.png)
+   ![img_10.png](images/grafana/grafana-app-logs-2.png)
+
+5. Traces: To view the traces, click on explorer in left panel and select Jaeger data source. Enter the trace id to see the traces of a request, you can get the trace id from the logs or from the metrics. For example, to view the traces for a request with trace id `d9b1c8e5f8a7b6c4`, you can enter the trace id in the search box and click on search to view the traces as shown below,
+   ![img_11.png](images/grafana/grafana-traces.png)
+
+
+## CI/CD Pipeline
+
+### GitHub Actions Workflow
+
+The CI/CD pipeline includes:
+
+1. **Build & Test**
+    - Compile code
+    - Run unit tests
+    - Run integration tests
+    - Code coverage
+
+2. **Docker Build & Push**
+    - Build multi-stage Docker image
+    - Push to container registry
+
+3. **Security Scanning**
+    - Trivy vulnerability scan
+    - SARIF report upload
+
+4. **Code Quality**
+    - SonarQube analysis
+    - Code coverage metrics
+
+### Pipeline Status
 
 ```
-      Service                 URL
-      ----------------------- -----------------------
-      Health                  http://localhost:8080/actuator/health
+Push to main
+    ↓
+Build & Test (parallel jobs)
+    ├── Unit Tests
+    ├── Integration Tests
+    └── Code Coverage
+    ↓
+Docker Build & Push
+    ↓
+Security Scanning
+    ↓
+Code Quality Analysis
+    ↓
+Notify
+```
 
-      Metrics                 http://localhost:8080/actuator/info
-    
-      Prometheus              http://localhost:9090
-    
-      Grafana                 http://localhost:3000
+## Simple Performance testing results using Apache Bend
 
-      Loki                    http://localhost:3100
+![img_14.png](images/Apache_Bend_Mini_Performance_Testing.png)
 
-------------------------------------------------------------------------
+## How to un-install Stack?
 
-## 📁 Project Structure
+For convenience to un-install the application, I have bundled the required commands in one shell script, you can just
+run the shell script or run individual commands in the shell script by yourself to stop the whole application stack
+along with the devops capabilities,
+(Assuming that you're in the root directory of the application git repo)
 
-    roman-numerals/
-    ├── pom.xml                                  # Maven build config & dependency management
-    ├── Dockerfile                               # Multi-stage Docker build (build + runtime)
-    ├── mvnw/mvnw.cmd                            # Maven wrapper (no local Maven install needed)
-    ├── src/main/java/com/adobe/aem/romannumerals/
-    │   ├── RomanNumeralsApplication.java        # Spring Boot entry point
-    │   ├── constants/
-    │   │   └── RomanNumeralsConstants.java      # Centralized constants (ranges, error messages)
-    │   ├── controller/
-    │   │   └── RomanNumeralController.java      # REST endpoint: GET /romannumeral?query=
-    │   ├── dto/
-    │   │   ├── RomanNumeralResponse.java        # Success response DTO
-    │   │   └── ErrorResponse.java               # Error response DTO
-    │   ├── exception/
-    │   │   └── GlobalExceptionHandler.java      # @RestControllerAdvice for all exceptions
-    │   └── service/
-    │       └── RomanNumeralConverterService.java # Conversion logic (greedy algorithm)
-    ├── src/main/resources/
-    │   ├── application.yaml                     # App config (actuator, tracing, OTLP)
-    │   └── logback-spring.xml                   # Logging with traceId/spanId in output
-    ├── src/test/java/com/adobe/aem/romannumerals/
-    │   ├── RomanNumeralsApplicationTests.java   # Context load test + Main method coverage
-    │   ├── constants/
-    │   │   └── RomanNumeralsConstantsTest.java  # Constants verification
-    │   ├── controller/
-    │   │   ├── RomanNumeralControllerUnitTest.java       # Unit tests (mocked service)
-    │   │   ├── RomanNumeralControllerWebMvcTest.java     # MockMvc HTTP-layer tests
-    │   │   └── RomanNumeralControllerIntegrationTest.java # Full integration tests
-    │   ├── exception/
-    │   │   └── GlobalExceptionHandlerTest.java  # Exception handler branch tests
-    │   ├── load/
-    │   │   └── RomanNumeralApiLoadTest.java     # Concurrent load test (20 threads)
-    │   └── service/
-    │       └── RomanNumeralConverterServiceTest.java # Service unit tests
-    ├── k8s/
-    │   └── deployment.yaml                      # K8s manifests (Namespace, Deployment, Service, HPA, PDB, RBAC, NetworkPolicy)
-    ├── observability/
-    │   ├── docker-compose.yml                   # Full observability stack (app + Prometheus + Grafana + Loki + OTel)
-    │   ├── prometheus/prometheus.yml            # Prometheus scrape config
-    │   ├── grafana/                             # Pre-built Grafana dashboards
-    │   │   ├── dashboards/
-    │   │   │   ├── roman-numerals-logs.json     # Loki-powered log visualization dashboard
-    │   │   │   └── ...
-    │   │   └── provisioning/                    # Auto-provisioned datasources & dashboards
-    │   ├── loki/                                # Loki log aggregation
-    │   │   ├── loki-config.yml                  # Loki configuration
-    │   │   └── promtail-config.yml              # Promtail log shipper configuration
-    │   ├── otel/
-    │   │   └── otel-collector-config.yml        # OpenTelemetry Collector pipeline config
-    │   └── ...
-    └── .github/workflows/
-    └── ci-cd.yml                            # GitHub Actions CI/CD pipeline
-
-------------------------------------------------------------------------
+```
+cd docker
+sh stopWholeStack.sh
+```
 
 ## Future Enhancements
 
@@ -396,5 +380,26 @@ docker run -p 8080:8080 roman-numerals:latest
     
     ● Validate min < max and both within range in the controller/service layer.
 
+## References
 
-------------------------------------------------------------------------
+1. [Roman Numeral Wikipedia Reference](https://simple.wikipedia.org/wiki/Roman_numerals)
+2. [spring-boot](https://spring.io/projects/spring-boot)
+3. [docker-compose](https://docs.docker.com/compose/)
+4. [Prometheus & Grafana](https://grafana.com/docs/grafana/latest/getting-started/getting-started-prometheus/)
+
+
+
+
+
+
+
+
+
+
+
+
+   
+
+
+
+
