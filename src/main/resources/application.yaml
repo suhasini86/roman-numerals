@@ -27,3 +27,16 @@ management:
         enabled: true
         timeout: 10s
 
+---
+# Standalone profile - disable tracing when running without Docker
+spring:
+  config:
+    activate:
+      on-profile: standalone
+
+management:
+  otlp:
+    tracing:
+      export:
+        enabled: false
+
