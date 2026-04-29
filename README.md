@@ -295,7 +295,8 @@ The CI/CD pipeline includes:
     - Code coverage metrics
 
 ### Pipeline Status
-
+Sample rin from github actions,
+![img_12.png](images/ci-cd.png)
 ```
 Push to main
     ↓
