@@ -123,7 +123,7 @@ Output:
 }
 ```
 
-## Running Unit/Integration Tests
+### Running Unit/Integration Tests
 ``` bash
 From application root directory: 
 
@@ -134,22 +134,31 @@ From application root directory:
     mvn verify
 # Run a specific test class
     mvn test -Dtest=RomanNumeralConverterServiceTest
-# Run load tests
-    mvn test -Dtest=RomanNumeralApiLoadTest
 ``` 
 
 ### Load Testing
-    The RomanNumeralApiLoadTest runs 400 requests with 20 concurrent threads, including a
-    warm-up phase. It asserts:
-        ● Zero failures across all requests
-        ● Average latency < 250ms
-        ● P95 latency < 500ms
 
+#### Run load tests
+``` bash
+    mvn test -Dtest=RomanNumeralApiLoadTest
+```
+
+The RomanNumeralApiLoadTest runs 400 requests with 20 concurrent threads, including a
+    warm-up phase. It asserts:
+
+● Zero failures across all requests
+
+● Average latency < 250ms
+
+● P95 latency < 500ms
+
+Sample load test results from a run are shown below, demonstrating that the API can handle concurrent requests efficiently while maintaining low latency and zero errors.
 ![img_4.png](images/load-test.png)
 
 ### Code Coverage
-    ● JaCoCo is configured with a 90% line coverage minimum enforced at build time.
-    ● Coverage report is generated at target/site/jacoco/index.html after running tests.
+●  JaCoCo is configured with a 90% line coverage minimum enforced at build time.
+
+● Coverage report is generated at target/site/jacoco/index.html after running tests.
 ### Generate and view coverage report
     mvn clean test
     open target/site/jacoco/index.html
@@ -204,7 +213,7 @@ Http Status Code - 400
 
 ## Error Handling
 
-    The GlobalExceptionHandler (@RestControllerAdvice) provides centralized, consistent error responses: .
+The GlobalExceptionHandler (@RestControllerAdvice) provides centralized, consistent error responses. It handles specific exceptions related to request validation and type mismatches, returning a structured JSON error response with appropriate HTTP status codes.
 
 | Exception Type                          | HTTP Status| Scenario                                  |
 |-----------------------------------------|------------|-------------------------------------------|
@@ -316,20 +325,24 @@ Sample workflow run from github actions,
 ## Future Enhancements
 
 ### Extension 1: Range 1--3999
+The conversion algorithm already supports the full standard Roman numeral range (1-3999).
 
-    The conversion algorithm already supports the full standard Roman numeral range (1-3999).
-    The VALUES and SYMBOLS arrays include all mappings up to M (1000). To enable this, only
-    one constant change is required:
-    // In RomanNumeralsConstants.java
-    // Change:
-    // public static final int MAX_VALUE = 255;
-    public static final int MAX_VALUE = 3999;
-    No changes to the conversion logic are needed — only update the constant and corresponding
-    test assertions.
+The VALUES and SYMBOLS arrays include all mappings up to M (1000). To enable this, only one constant change is required:
+
+// In RomanNumeralsConstants.java
+
+// Change:
+
+// public static final int MAX_VALUE = 255;
+
+public static final int MAX_VALUE = 3999;
+
+No changes to the conversion logic are needed — only update the constant and corresponding test assertions.
 
 ### Extension 2: Range Query API
-    Add a new query format for bulk conversion of a range of integers using parallel computation.
-    Endpoint: GET /romannumeral?min={integer}&max={integer}
+Add a new query format for bulk conversion of a range of integers using parallel computation.
+
+Endpoint: GET /romannumeral?min={integer}&max={integer}
 
 ### Rules:
 
@@ -352,17 +365,14 @@ Sample workflow run from github actions,
 
 ### Implementation Approach:
 
-
-    ● Use IntStream.rangeClosed(min, max).parallel() or a ForkJoinPool to compute
+● Use IntStream.rangeClosed(min, max).parallel() or a ForkJoinPool to compute
     conversions concurrently
+
+● Collect results into a sorted list before serializing the response
     
-    ● Collect results into a sorted list before serializing the response
+● Add a RangeConversionResponse DTO with a List<RomanNumeralResponse> conversions field
     
-    ● Add a RangeConversionResponse DTO with a List<RomanNumeralResponse>
-    
-    conversions field
-    
-    ● Validate min < max and both within range in the controller/service layer.
+● Validate min < max and both within range in the controller/service layer.
 
 ## References
 
