@@ -88,7 +88,7 @@ docker-compose -f docker-compose.yml ps
 > Grafana - http://localhost:3000/
 
 5. To run the application in stand-alone mode without any devops capabilities, just run
-   the `RomanNumeralConverterApplication` class
+   the `RomanNumeralsApplication` class
 
 ## Testing
 
