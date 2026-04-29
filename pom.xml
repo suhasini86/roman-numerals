@@ -73,16 +73,6 @@
             <artifactId>opentelemetry-instrumentation-api</artifactId>
             <version>2.1.0</version>
         </dependency>
-        <dependency>
-            <groupId>io.opentelemetry.instrumentation</groupId>
-            <artifactId>opentelemetry-instrumentation-spring-web-3.1</artifactId>
-            <version>2.1.0</version>
-        </dependency>
-        <dependency>
-            <groupId>io.opentelemetry.instrumentation</groupId>
-            <artifactId>opentelemetry-instrumentation-spring-boot-autoconfigure</artifactId>
-            <version>2.1.0</version>
-        </dependency>
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
