@@ -265,15 +265,16 @@ Application → Logback → Promtail → Loki → Grafana
 ![img_10.png](images/grafana/grafana-datasource.png)
 
 3. Metrics: To explore application metrics, navigate to Drilldown → Metrics from the left-hand panel. This view displays all available metrics. You can refine the results using the search bar—for example, enter http.server.requests to view HTTP server request metrics, as illustrated below.
-   ![img_9.png](images/grafana/grafana-metrics.png)
+![img_9.png](images/grafana/grafana-metrics.png)
 Preconfigued metrics dashboard is also available under Dashboards. To access follow the steps as shown in below screenshots,
    ![img_10.png](images/grafana/custom-dashboard.png)
    ![img_10.png](images/grafana/custom-dashboard-2.png)
 
 4. Logs: To access application logs, navigate to Drilldown → Logs from the left-hand panel. This view displays all available logs.
-   ![img_10.png](images/grafana/grafana-app-logs-1.png)
-   You can filter logs using labels—for example, to view logs for the roman-numeral-converter service, apply the filter service="roman-numeral-converter", as shown below.
-   ![img_10.png](images/grafana/grafana-app-logs-2.png)
+![img_10.png](images/grafana/grafana-app-logs-1.png)
+
+You can filter logs using labels—for example, to view logs for the roman-numeral-converter service, apply the filter service="roman-numeral-converter", as shown below.
+![img_10.png](images/grafana/grafana-app-logs-2.png)
 
 5. Traces: To explore distributed traces, navigate to Explore from the left-hand panel and select the Jaeger data source. You can retrieve the relevant traceId from logs or metrics. Enter the traceId in the search field and execute the query to visualize the trace details for a specific request. For example, to view traces for the request with traceId = e370fa9a82fb65f4f554bdba20fa9772, enter the value in the search box and click Search, as illustrated below.
    ![img_11.png](images/grafana/grafana-traces.png)
