@@ -129,7 +129,7 @@ Output:
         ● Zero failures across all requests
         ● Average latency < 250ms
         ● P95 latency < 500ms
-[img_4.png](images/load-test.png)
+![img_4.png](images/load-test.png)
 
 # Code Coverage
     ● JaCoCo is configured with a 90% line coverage minimum enforced at build time.
@@ -296,23 +296,7 @@ The CI/CD pipeline includes:
 ### Pipeline Status
 Sample workflow run from github actions,
 ![img_12.png](images/ci-cd.png)
-```
 
-## Simple Performance testing results using Apache Bend
-
-![img_14.png](images/Apache_Bend_Mini_Performance_Testing.png)
-
-## How to un-install Stack?
-
-For convenience to un-install the application, I have bundled the required commands in one shell script, you can just
-run the shell script or run individual commands in the shell script by yourself to stop the whole application stack
-along with the devops capabilities,
-(Assuming that you're in the root directory of the application git repo)
-
-```
-cd docker
-sh stopWholeStack.sh
-```
 
 ## Future Enhancements
 
