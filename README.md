@@ -15,7 +15,6 @@ into it's respective roman numeral representation.
 - [CI/CD Pipeline](#cicd-pipeline)
 - [Observability](#observability)
 - [Sample API Request/Responses](#sample-api-requestresponses)
-- [Performance Testing](#simple-performance-testing-results-using-apache-bend)
 - [Future Improvements](#future-enhancements)
 - [References](#references)
 
