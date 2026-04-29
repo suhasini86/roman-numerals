@@ -64,7 +64,7 @@ mvn clean package -DskipTests
 ------------------------------------------------------------------------
 ## 🚀 Running the Application
 
-<img src="images/method.png" width="800"/>
+<img src="images/method.png" width="400"/>
 
 ### Method 1: Run Locally with Maven
 
