@@ -123,7 +123,7 @@ Output:
 }
 ```
 
-## Running Tests
+## Running Unit/Integration Tests
 ``` bash
 From application root directory: 
 
