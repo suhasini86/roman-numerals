@@ -29,7 +29,7 @@ services:
   app:
     image: roman-numerals:latest
     build:
-      context: ..
+      context: ../
       dockerfile: Dockerfile
     container_name: roman-numerals-app
     ports:

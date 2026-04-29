@@ -14,6 +14,11 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: suhasini86/roman-numerals
 
+permissions:
+  contents: read
+  packages: write
+  security-events: write
+
 jobs:
   build-and-test:
     name: Build and Test
