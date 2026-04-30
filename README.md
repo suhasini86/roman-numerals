@@ -62,7 +62,8 @@ mvn -v
 
 ```
 cd observability
-docker-compose -f docker-compose.yml up --build
+docker-compose pull
+docker-compose up -d
 ```
 
 The docker compose will spin the whole docker infra. The
