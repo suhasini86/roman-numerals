@@ -57,12 +57,14 @@ docker-compose -v
 mvn -v
 ```
 
-3.  Run the below commands to start the whole application stack along with the observability capabilities as shown in the architecture diagram.
-   (Assuming that you're in the root directory of the application git repo, run the below commands)
-
+3.  Ensure that Docker is running on your local machine. From the root directory of the application’s Git repository, execute the below commands to start the whole application stack along with the observability capabilities as shown in the architecture diagram.
 ```
 cd observability
+```
+```
 docker-compose pull
+```
+```
 docker-compose up -d
 ```
 
@@ -92,13 +94,17 @@ docker-compose -f docker-compose.yml ps
 > Jaeger - http://localhost:16686/
 > 
 
-5. To run the application in stand-alone mode without any devops capabilities, just run
-   the `RomanNumeralsApplication`class
+5. To run the application in standalone mode without DevOps or observability capabilities, execute the following commands in the terminal. This will start the application using the standalone profile, which is configured to operate without observability features.
+
+Powershell
 ``` bash
-powershell
 > $env:SPRING_PROFILES_ACTIVE = "standalone"
-> mvn: spring-boot:run
-mac
+> mvn spring-boot:run
+````
+
+Mac/Linux
+
+``` bash
 > export SPRING_PROFILES_ACTIVE=standalone
 > mvn spring-boot:run
 
