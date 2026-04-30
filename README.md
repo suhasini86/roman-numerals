@@ -9,13 +9,13 @@ into it's respective roman numeral representation.
 - [Architecture](#architecture)
 - [Frameworks and Technologies Used](#frameworks-and-technologies-used)
 - [Packaging Layout](#packaging-layout)
-- [How to build and deploy the application](#how-to-build-and-deploy-the-stack)
+- [How to build and deploy the application](#how-to-build-and-deploy-the-application)
 - [Testing](#testing)
 - [Error Handling](#error-handling)
 - [CI/CD Pipeline](#cicd-pipeline)
 - [Observability](#observability)
 - [Sample API Request/Responses](#sample-api-requestresponses)
-- [Future Improvements](#future-enhancements)
+- [Future Enhancements](#future-enhancements)
 - [References](#references)
 
 ## Architecture
@@ -40,7 +40,7 @@ into it's respective roman numeral representation.
 
 ![img_2.png](images/packaging.png)
 
-## How to build and deploy the stack?
+## How to build and deploy the application
 
 1. Clone the git repo
 
