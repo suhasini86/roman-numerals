@@ -160,18 +160,26 @@ The `RomanNumeralApiLoadTest1` simulates 400 requests with 20 concurrent threads
 
 ● Average response time < 250 ms
 
-●95th percentile (P95) latency < 500 ms
+● 95th percentile (P95) latency < 500 ms
 
 These thresholds ensure the service maintains both stability and responsiveness under load.
 ![img_4.png](images/load-test.png)
 
 ### Code Coverage
-●  JaCoCo is configured with a 90% line coverage minimum enforced at build time.
+Code coverage is enforced using JaCoCo to maintain high test quality and prevent regression risks:
 
-● Coverage report is generated at target/site/jacoco/index.html after running tests.
-### Generate and view coverage report
+● Minimum 90% line coverage enforced during the build lifecycle
+
+● Coverage reports generated post-test execution
+
+#### Generate and view coverage report
+```bash
     mvn clean test
+ ```
+Open the report:
+``` bash
     open target/site/jacoco/index.html
+ ```
 
 | Category    | Class                                   | Description                          |
 |-------------|------------------------------------------|--------------------------------------|
