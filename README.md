@@ -221,7 +221,9 @@ Http Status Code - 400
 
 ## Error Handling
 
-The GlobalExceptionHandler (@RestControllerAdvice) provides centralized, consistent error responses. It handles specific exceptions related to request validation and type mismatches, returning a structured JSON error response with appropriate HTTP status codes.
+The application leverages a centralized exception handling mechanism implemented via @RestControllerAdvice (GlobalExceptionHandler) to ensure consistent and structured error responses across all endpoints. This approach standardizes API behavior by mapping common validation and request-processing exceptions to appropriate HTTP status codes, while returning a uniform JSON error payload for improved client-side handling and debuggability.
+
+The following table outlines the supported exception mappings, corresponding HTTP status codes, and typical scenarios:
 
 | Exception Type                          | HTTP Status| Scenario                                  |
 |-----------------------------------------|------------|-------------------------------------------|
