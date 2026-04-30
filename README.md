@@ -67,7 +67,7 @@ docker-compose up -d
 ```
 
 The docker compose will spin the whole docker infra. The
-whole process should take around 2 to 3 mins depending on the underlying machine. Output will be as shown below with status of various services,
+whole process should take around 2 to 3 mins depending on the underlying machine. Output will be as shown below, with status of various services:
 
 ![img_3.png](images/grafana/docker-compose-status.png)
 
@@ -132,6 +132,7 @@ From application root directory:
 
 # Run full verification (includes integration tests)
     mvn verify
+    
 # Run a specific test class
     mvn test -Dtest=RomanNumeralConverterServiceTest
 ``` 
@@ -139,7 +140,7 @@ From application root directory:
 ### Load Testing
 
 #### Run load tests
-Use the below command to run the load tests for the API.
+Use the below command to run a load test on this API
 ``` bash
     mvn test -Dtest=RomanNumeralApiLoadTest
 ```
@@ -148,9 +149,9 @@ Use the below command to run the load tests for the API.
     warm-up phase. It asserts:
 
 ● Zero failures across all requests
-
+    
 ● Average latency < 250ms
-
+    
 ● P95 latency < 500ms
 
 Sample load test results from a run are shown below, demonstrating that the API can handle concurrent requests efficiently while maintaining low latency and zero errors.
