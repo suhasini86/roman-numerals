@@ -28,9 +28,6 @@ services:
 
   app:
     image: ghcr.io/suhasini86/roman-numerals:latest
-    build:
-      context: ../
-      dockerfile: Dockerfile
     container_name: roman-numerals-app
     ports:
       - "8080:8080"
