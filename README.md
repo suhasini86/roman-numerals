@@ -111,6 +111,7 @@ Mac/Linux
 ```
 
 ## Testing
+The application includes comprehensive testing coverage across functional, integration, and performance dimensions to ensure reliability, correctness, and scalability.
 
 ### Health check
 
@@ -130,6 +131,7 @@ Output:
 ```
 
 ### Running Unit/Integration Tests
+Execute the following commands from the root directory of the application:
 ``` bash
 From application root directory: 
 
@@ -144,6 +146,7 @@ From application root directory:
 ``` 
 
 ### Load Testing
+Performance testing is implemented to validate system behavior under concurrent load conditions.
 
 #### Run load tests
 Use the below command to run a load test on this API
@@ -151,16 +154,15 @@ Use the below command to run a load test on this API
     mvn test -Dtest=RomanNumeralApiLoadTest
 ```
 
-`The RomanNumeralApiLoadTest` runs 400 requests with 20 concurrent threads, including a
-    warm-up phase. It asserts:
+The `RomanNumeralApiLoadTest1` simulates 400 requests with 20 concurrent threads, including an initial warm-up phase. The test enforces the following performance criteria:
 
-● Zero failures across all requests
-    
-● Average latency < 250ms
-    
-● P95 latency < 500ms
+● Zero request failures
 
-Sample load test results from a run are shown below, demonstrating that the API can handle concurrent requests efficiently while maintaining low latency and zero errors.
+● Average response time < 250 ms
+
+●95th percentile (P95) latency < 500 ms
+
+These thresholds ensure the service maintains both stability and responsiveness under load.
 ![img_4.png](images/load-test.png)
 
 ### Code Coverage
