@@ -67,12 +67,11 @@ docker-compose up -d
 ```
 
 The docker compose will spin the whole docker infra. The
-whole process should take around 2 to 3 mins depending on the underlying machine, you should see a similar output as
-shown below with status of various services,
+whole process should take around 2 to 3 mins depending on the underlying machine. Output will be as shown below with status of various services,
 
 ![img_3.png](images/grafana/docker-compose-status.png)
 
-Use the below command to refresh the status of the services until you see all the services Up
+Use the below command to refresh the status of the services until all the services up.
 
 ```
 docker-compose -f docker-compose.yml ps
@@ -140,11 +139,12 @@ From application root directory:
 ### Load Testing
 
 #### Run load tests
+Use the below command to run the load tests for the API.
 ``` bash
     mvn test -Dtest=RomanNumeralApiLoadTest
 ```
 
-The RomanNumeralApiLoadTest runs 400 requests with 20 concurrent threads, including a
+`The RomanNumeralApiLoadTest` runs 400 requests with 20 concurrent threads, including a
     warm-up phase. It asserts:
 
 ● Zero failures across all requests
@@ -268,26 +268,26 @@ Application → Logback → Promtail → Loki → Grafana
 
 > http://localhost:3000/
 
-1. The default Grafana credentials are admin/admin. For security purposes, you will be prompted to set a new password upon your first login. After successfully signing in, you should see a home screen similar to the one shown below.
+1. The default Grafana login credentials are admin/admin. For security purposes, you will be prompted to set a new password upon your first login. After successfully signing in, you should see a home screen similar to the one shown below.
    ![img_8.png](images/grafana/grafana-main-screen.png)
 
-2. Preconfigured data sources for Prometheus, Loki, and Jaeger are already available. To review them, navigate to Configuration → Data Sources from the left-hand panel, where you can view and manage the existing configurations.
+2. Preconfigured data sources for Prometheus, Loki, and Jaeger are already available. To review them, navigate to Configuration → Data Sources in the left-hand panel, where you can view and manage the existing configurations.
 ![img_10.png](images/grafana/grafana-datasource.png)
 
-3. Metrics: To explore application metrics, navigate to Drilldown → Metrics from the left-hand panel. This view displays all available metrics. You can refine the results using the search bar—for example, enter http.server.requests to view HTTP server request metrics, as illustrated below.
+3. `Metrics:` To explore application metrics, navigate to Drilldown → Metrics in the left-hand panel. This view displays all available metrics. You can refine the results using the search bar—for example, enter http.server.requests to view HTTP server request metrics, as illustrated below.
 ![img_9.png](images/grafana/grafana-metrics.png)
-   Preconfigured metrics dashboard is also available under Dashboards. To access follow the steps as shown in below screenshots,
+   Preconfigured metrics dashboard is also available under Dashboards. To access follow the steps as shown in below screenshots.
    ![img_10.png](images/grafana/custom-dashboard.png)
    ![img_10.png](images/grafana/custom-dashboard-2.png)
 
-4. Logs: To access application logs, navigate to Drilldown → Logs from the left-hand panel. This view displays all available logs.
+4. `Logs:` To access application logs, navigate to Drilldown → Logs in the left-hand panel. This view displays all available logs.
 
     ![img_10.png](images/grafana/grafana-logs-1.png)
 
     You can filter logs using labels—for example, to view logs for the roman-numeral-converter service, apply the filter service="roman-numeral-converter", as shown below.
     ![img_10.png](images/grafana/grafana-logs-2.png)
 
-5. Traces: To explore distributed traces, navigate to Explore from the left-hand panel and select the Jaeger data source. You can retrieve the relevant traceId from logs or metrics. Enter the traceId in the search field and execute the query to visualize the trace details for a specific request. For example, to view traces for the request with traceId = e370fa9a82fb65f4f554bdba20fa9772, enter the value in the search box and click Search, as illustrated below.
+5. `Traces:` To explore distributed traces, navigate to Explore from the left-hand panel and select the Jaeger data source. You can retrieve the relevant `TraceId` from logs or metrics. Enter the traceId in the search field and execute the query to visualize the trace details for a specific request. For example, to view traces for the request with traceId = e370fa9a82fb65f4f554bdba20fa9772, enter the value in the search box and click Search, as illustrated below.
    ![img_11.png](images/grafana/grafana-traces.png)
 
 
@@ -307,7 +307,7 @@ The CI/CD pipeline includes:
     - Build multi-stage Docker image
     - Push to container registry
     - which can be used to deploy the application in any environment (dev, staging, prod)
-    - Docker hub registry screenshot:
+    - Sample Docker hub registry screenshot:
    - ![img_12.png](images/docker-hub-registry.png)
 
 3. **Security Scanning**
@@ -326,19 +326,12 @@ Sample workflow run from github actions,
 ## Future Enhancements
 
 ### Extension 1: Range 1--3999
-The conversion algorithm already supports the full standard Roman numeral range (1-3999).
+The conversion algorithm already supports the full standard Roman numeral range (1-3999). The `VALUES` and `SYMBOLS` arrays include all mappings up to M (1000). To enable this, only one constant change is required:
 
-The VALUES and SYMBOLS arrays include all mappings up to M (1000). To enable this, only one constant change is required:
+// Changes to support range 1-3999:
+In `RomanNumeralsConstants.java` change the MAX_VALUE constant from 255 to 3999.
 
-// In RomanNumeralsConstants.java
-
-// Change:
-
-// public static final int MAX_VALUE = 255;
-
-public static final int MAX_VALUE = 3999;
-
-No changes to the conversion logic are needed — only update the constant and corresponding test assertions.
+No changes to the conversion logic are needed — only updating the `MAX_VALUE` constant and corresponding test assertions.
 
 ### Extension 2: Range Query API
 Add a new query format for bulk conversion of a range of integers using parallel computation.
@@ -366,14 +359,13 @@ Endpoint: GET /romannumeral?min={integer}&max={integer}
 
 ### Implementation Approach:
 
-● Use IntStream.rangeClosed(min, max).parallel() or a ForkJoinPool to compute
-    conversions concurrently
+● Use `IntStream.rangeClosed(min, max).parallel()` or a `ForkJoinPool` to compute conversions concurrently
 
 ● Collect results into a sorted list before serializing the response
     
-● Add a RangeConversionResponse DTO with a List<RomanNumeralResponse> conversions field
+● Add a `RangeConversionResponse` DTO with a `List<RomanNumeralResponse>` conversions field
     
-● Validate min < max and both within range in the controller/service layer.
+● Validate `min < max` and both within range in the controller/service layer.
 
 ## References
 
