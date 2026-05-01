@@ -1,11 +1,25 @@
 # roman-numeral-converter
 
-**roman-numeral-converter** is a java based spring-boot application that exposes a GET based REST API to convert integer
-into it's respective roman numeral representation.
+This project implements a Roman numeral conversion service that converts integers to Roman numerals for a constrained range of 1 to 255.
+
+While the core problem is intentionally simple, the goal of this project is to demonstrate how to design and build a production-ready microservice, including:
+
+● RESTful API design
+
+● Input validation and error handling
+
+● Observability (metrics, health checks)
+
+● CI/CD integration
+
+● Containerized deployment
+
+
 > Developed by: Suhasini Pamidi
 
 ## Table of Contents
 
+- [Problem Statement](#problem-statement)
 - [Architecture](#architecture)
 - [Frameworks and Technologies Used](#frameworks-and-technologies-used)
 - [Packaging Layout](#packaging-layout)
@@ -17,6 +31,16 @@ into it's respective roman numeral representation.
 - [Sample API Request/Responses](#sample-api-requestresponses)
 - [Future Enhancements](#future-enhancements)
 - [References](#references)
+
+## Problem Statement
+
+Convert an integer to its Roman numeral representation with the following constraints:
+
+● Supported range: 1–255
+
+● Input outside this range is considered invalid
+
+● Only integer → Roman conversion is supporte
 
 ## Architecture
 
@@ -154,7 +178,7 @@ Use the below command to run a load test on this API
     mvn test -Dtest=RomanNumeralApiLoadTest
 ```
 
-The `RomanNumeralApiLoadTest1` simulates 400 requests with 20 concurrent threads, including an initial warm-up phase. The test enforces the following performance criteria:
+The `RomanNumeralApiLoadTest` simulates 400 requests with 20 concurrent threads, including an initial warm-up phase. The test enforces the following performance criteria:
 
 ● Zero request failures
 
@@ -181,16 +205,17 @@ Open the report:
     open target/site/jacoco/index.html
  ```
 
-| Category    | Class                                   | Description                          |
-|-------------|------------------------------------------|--------------------------------------|
-| Unit Tests  | RomanNumeralConverterServiceTest         | Tests conversion logic               |
-| Unit Tests  | RomanNumeralsConstantsTest               | Verifies constant values             |
-| Unit Tests  | RomanNumeralControllerUnitTest           | Controller logic with mocked service |
-| WebMvc Tests| RomanNumeralControllerWebMvcTest         | HTTP layer testing                   |
-| Integration | RomanNumeralControllerIntegrationTest    | Full Spring Boot context             |
-| Integration | RomanNumeralsApplicationTests            | Application context loads            |
-| Exception   | GlobalExceptionHandlerTest               | Exception handling coverage          |
-| Load Tests  | RomanNumeralApiLoadTest                  | Concurrent load testing              |
+| Category    | Class                                 | Description                          |
+|-------------|---------------------------------------|--------------------------------------|
+| Unit Tests  | RomanNumeralConverterServiceTest      | Tests conversion logic               |
+| Unit Tests  | RomanNumeralsConstantsTest            | Verifies constant values             |
+| Unit Tests  | RomanNumeralControllerUnitTest        | Controller logic with mocked service |
+| WebMvc Tests| RomanNumeralControllerWebMvcTest      | HTTP layer testing                   |
+| Integration | RomanNumeralControllerIntegrationTest | Full Spring Boot context             |
+| Integration | RomanNumeralsApplicationTests         | Application context loads            |
+| Exception   | GlobalExceptionHandlerTest            | Exception handling coverage          |
+| Exception   | InvalidRomanNumeralExceptionTest      | Domain Specific exceptions tes       |
+| Load Tests  | RomanNumeralApiLoadTest               | Concurrent load testing              |
 ------------------------------------------------------------------------
 
 ## Sample API Request/Responses
@@ -228,6 +253,35 @@ Http Status Code - 400
   "message": "Query must be a valid integer"
 }
 ```
+### Not Found Request
+
+```bash
+curl -X GET "http://localhost:8080/dfgdfgdf"
+```
+### Not Found Response
+```
+Http Status Code - 404
+{
+  "timestamp": "2026-04-27T00:00:00Z",
+  "status": 404,
+  "error": "Not Found",
+  "message": "Requested resource not found"
+}
+```
+### Method Not Allowed Request
+```
+curl -X POST "http://localhost:8080/romannumeral?query=42"
+```
+### Method Not Allowed Response
+```
+Http Status Code - 405
+{
+  "timestamp": "2026-04-27T00:00:00Z",
+  "status": 405,
+  "error": "Method Not Allowed",
+  "message": "HTTP method not supported"
+}
+```
 
 ## Error Handling
 
@@ -235,14 +289,15 @@ The application leverages a centralized exception handling mechanism implemented
 
 The following table outlines the supported exception mappings, corresponding HTTP status codes, and typical scenarios:
 
-| Exception Type                          | HTTP Status| Scenario                                  |
-|-----------------------------------------|------------|-------------------------------------------|
-| MissingServletRequestParameterException | 400        | query parameter not provided              |
-| IllegalArgumentException                | 400        | Empty/blank query, or value outside range |
-| NumberFormatException                   | 400        | Non-numeric input (e.g., ?query=abc)      |
-| MethodArgumentTypeMismatchException     | 400        | Type mismatch on request parameter        |
-| HttpMessageNotReadableException         | 400        | Malformed request body                    |
-| Exception                               | 500        | Any unhandled exception                   |
+| Exception Type                         | HTTP Status | Scenario                                  |
+|----------------------------------------|-------------|-------------------------------------------|
+| MissingServletRequestParameterException | 400         | query parameter not provided              |
+| MethodArgumentTypeMismatchException    | 400         | Empty/blank query, or value outside range |
+| ConstraintViolationException           | 400         | Non-numeric input (e.g., ?query=abc)      |
+| InvalidRomanNumeralException           | 400         | Type mismatch on request parameter        |
+| NoHandlerFoundException                | 404         | Malformed request body                    |
+| HttpRequestMethodNotSupportedException | 405         | Unsupported HTTP method (e.g., POST /romannumeral)|
+| Exception                              | 500         | Any unhandled exception                   |
 
 ``` json
 {

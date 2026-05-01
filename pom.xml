@@ -8,7 +8,7 @@
 		<version>3.5.14</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.adobe.aem</groupId>
+	<groupId>com.converter</groupId>
 	<artifactId>roman-numeral-convertor</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>roman-numeral-convertor</name>
