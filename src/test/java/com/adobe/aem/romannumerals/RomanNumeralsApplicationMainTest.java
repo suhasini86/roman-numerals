@@ -1,5 +1,6 @@
 package com.adobe.aem.romannumerals;
 
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
@@ -14,8 +15,10 @@ class RomanNumeralsApplicationMainTest {
     void mainShouldDelegateToSpringApplication() {
         try (MockedStatic<SpringApplication> springApplication = mockStatic(SpringApplication.class)) {
             RomanNumeralsApplication.main(new String[]{"--spring.main.web-application-type=none"});
-            springApplication.verify(() -> SpringApplication.run(RomanNumeralsApplication.class,
-                    new String[]{"--spring.main.web-application-type=none"}));
+
+            springApplication.verify(() ->
+                    SpringApplication.run(RomanNumeralsApplication.class,
+                            new String[]{"--spring.main.web-application-type=none"}));
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.adobe.aem.romannumerals.config;
 
+
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
@@ -29,8 +30,8 @@ public class OpenApiConfig {
         return new OpenAPI()
                 .info(new Info()
                         .title("Roman Numerals Converter API")
-                        .description("A Spring Boot microservice that converts integers (1-255) to Roman numerals. "
-                                + "Built with full observability, extensive test coverage, and CI/CD pipeline.")
+                        .description("A Spring Boot microservice that converts integers (1-255) "
+                                + "Built with full observability, extensive test coverage, and")
                         .version("1.0.0")
                         .contact(new Contact()
                                 .name("Suhasini")

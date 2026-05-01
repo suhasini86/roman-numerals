@@ -1,5 +1,6 @@
 package com.adobe.aem.romannumerals.dto;
 
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 
@@ -24,6 +25,14 @@ public class ErrorResponse {
     @Schema(description = "Human-readable error message", example = "Query range must be between 1 and 255")
     private String message;
 
+    /**
+     * Constructs a new {@code ErrorResponse}.
+     *
+     * @param timestamp when the error occurred
+     * @param status    HTTP status code
+     * @param error     HTTP reason phrase (e.g., "Bad Request")
+     * @param message   human-readable error description
+     */
     public ErrorResponse(Instant timestamp, int status, String error, String message) {
         this.timestamp = timestamp;
         this.status = status;

@@ -1,16 +1,20 @@
 package com.adobe.aem.romannumerals.service;
 
+import com.adobe.aem.romannumerals.exception.InvalidRomanNumeralException;
 import io.micrometer.observation.annotation.Observed;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import static com.adobe.aem.romannumerals.constants.RomanNumeralsConstants.*;
+import static com.adobe.aem.romannumerals.constants.RomanNumeralsConstants.INVALID_RANGE_ERR_MSG;
+import static com.adobe.aem.romannumerals.constants.RomanNumeralsConstants.MAX_VALUE;
+import static com.adobe.aem.romannumerals.constants.RomanNumeralsConstants.MIN_VALUE;
 
 /**
- * Service for converting integers to Roman numerals
- *
- * Supports range 1-255 (default).
- * Uses a clean, maintainable approach with mapping of values to Roman symbols.
+ * Service responsible for converting integers to their Roman numeral representation.
+ * <p>
+ * Supports the range {@value com.adobe.aem.romannumerals.constants.RomanNumeralsConstants#MIN_VALUE}
+ * to {@value com.adobe.aem.romannumerals.constants.RomanNumeralsConstants#MAX_VALUE}.
+ * Uses a greedy algorithm with a pre-defined mapping of decimal values to Roman symbols.
  */
 @Slf4j
 @Service
@@ -62,12 +66,11 @@ public class RomanNumeralConverterService {
      * Validate the input number is within acceptable range
      *
      * @param number the integer to validate
-     * @throws IllegalArgumentException if validation fails
+     * @throws InvalidRomanNumeralException if validation fails
      */
     private void validateRange(int number) {
         if (number < MIN_VALUE || number > MAX_VALUE) {
-            throw new IllegalArgumentException(INVALID_RANGE_ERR_MSG);
+            throw new InvalidRomanNumeralException(INVALID_RANGE_ERR_MSG);
         }
     }
-
 }

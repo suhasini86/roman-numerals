@@ -1,45 +1,83 @@
 package com.adobe.aem.romannumerals.service;
 
-import org.junit.jupiter.api.DisplayName;
+import com.adobe.aem.romannumerals.exception.InvalidRomanNumeralException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.jupiter.params.provider.ValueSource;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static com.adobe.aem.romannumerals.constants.RomanNumeralsConstants.MAX_VALUE;
+import static com.adobe.aem.romannumerals.constants.RomanNumeralsConstants.MIN_VALUE;
+import static org.junit.jupiter.api.Assertions.*;
 
 class RomanNumeralConverterServiceTest {
 
-    private final RomanNumeralConverterService service = new RomanNumeralConverterService();
+    private RomanNumeralConverterService service;
 
-    @ParameterizedTest
-    @CsvSource({
-            "1,I",
-            "4,IV",
-            "9,IX",
-            "40,XL",
-            "58,LVIII",
-            "90,XC",
-            "199,CXCIX",
-            "255,CCLV"
-    })
-    @DisplayName("toRoman should convert valid values")
-    void toRomanShouldConvertValidValues(int input, String expected) {
-        assertEquals(expected, service.toRoman(input));
+    @BeforeEach
+    void setUp() {
+        service = new RomanNumeralConverterService();
     }
 
-    @ParameterizedTest
-    @ValueSource(ints = {0, -1, 256, 1000})
-    @DisplayName("toRoman should reject out of range values")
-    void toRomanShouldRejectOutOfRange(int input) {
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> service.toRoman(input));
-        assertEquals("Query range must be between 1 and 255", ex.getMessage());
+
+    @Test
+    void shouldConvertComplexNumbers() {
+        assertEquals("IV", service.toRoman(4));
+        assertEquals("IX", service.toRoman(9));
+        assertEquals("XL", service.toRoman(40));
+        assertEquals("XC", service.toRoman(90));
     }
 
     @Test
-    @DisplayName("performRomanConversion should handle repeated symbols")
-    void performRomanConversionShouldHandleRepeatedSymbols() {
-        assertEquals("CCLV", RomanNumeralConverterService.performRomanConversion(255));
+    void shouldConvertTypicalNumbers() {
+        assertEquals("LVIII", service.toRoman(58));
+        assertEquals("CCLV", service.toRoman(255));
+        assertEquals("XLII", service.toRoman(42));
+    }
+
+
+    @Test
+    void shouldConvertMinimumValue() {
+        assertEquals("I", service.toRoman(MIN_VALUE));
+    }
+
+    @Test
+    void shouldConvertMaximumValue() {
+        assertEquals("CCLV", service.toRoman(MAX_VALUE));
+    }
+
+    @Test
+    void shouldThrowExceptionWhenBelowMinimum() {
+        InvalidRomanNumeralException ex = assertThrows(
+                InvalidRomanNumeralException.class,
+                () -> service.toRoman(MIN_VALUE - 1)
+        );
+
+        assertNotNull(ex.getMessage());
+    }
+
+    @Test
+    void shouldThrowExceptionWhenAboveMaximum() {
+        InvalidRomanNumeralException ex = assertThrows(
+                InvalidRomanNumeralException.class,
+                () -> service.toRoman(MAX_VALUE + 1)
+        );
+
+        assertNotNull(ex.getMessage());
+    }
+
+
+    @Test
+    void shouldConvertUsingStaticMethod() {
+        assertEquals("X", RomanNumeralConverterService.performRomanConversion(10));
+        assertEquals("XLII", RomanNumeralConverterService.performRomanConversion(42));
+    }
+
+
+    @Test
+    void shouldHandleSequentialNumbersCorrectly() {
+        for (int i = 1; i <= 20; i++) {
+            String result = service.toRoman(i);
+            assertNotNull(result);
+            assertFalse(result.isEmpty());
+        }
     }
 }

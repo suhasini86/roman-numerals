@@ -1,73 +1,153 @@
 package com.adobe.aem.romannumerals.exception;
 
-import com.adobe.aem.romannumerals.constants.RomanNumeralsConstants;
 import com.adobe.aem.romannumerals.dto.ErrorResponse;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.NoHandlerFoundException;
 
 import java.time.Instant;
+import java.util.stream.Collectors;
 
+import static com.adobe.aem.romannumerals.constants.RomanNumeralsConstants.*;
 
+/**
+ * Global exception handler that intercepts exceptions thrown across all
+ * {@code @RestController} classes and maps them to structured JSON error responses.
+ * <p>
+ * Each handler method converts a specific exception type into an appropriate
+ * HTTP status code and builds {@link ErrorResponse} body.
+ */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-    //Missing query param
+    /**
+     * Handles missing required request parameters.
+     *
+     * @param ex the exception thrown by Spring when a required parameter is absent
+     * @return 400 Bad Request with a descriptive message
+     */
     @ExceptionHandler(MissingServletRequestParameterException.class)
     public ResponseEntity<ErrorResponse> handleMissingParam(MissingServletRequestParameterException ex) {
-        return buildResponse(HttpStatus.BAD_REQUEST,
-                ex.getParameterName() + " parameter is missing");
+        log.warn("Missing request parameter: {}", ex.getParameterName());
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, MISSING_QUERY_ERR_MSG);
     }
 
-    // NumberFormatException (e.g. ?query=abc)
-    @ExceptionHandler(NumberFormatException.class)
-    public ResponseEntity<ErrorResponse> handleNumberFormat(NumberFormatException ex) {
-        return buildResponse(HttpStatus.BAD_REQUEST, RomanNumeralsConstants.INVALID_NUMBER_MESSAGE);
-    }
-
-    //Type mismatch (e.g. ?query=abc when expecting int)
+    /**
+     * Handles invalid parameter type conversion.
+     *
+     * @param ex the exception thrown when request parameter cannot be converted
+     * @return 400 Bad Request with validation message
+     */
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ErrorResponse> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
-        return buildResponse(HttpStatus.BAD_REQUEST,
-                "Invalid value for parameter: " + ex.getName());
+        log.warn("Invalid request parameter: {}={}", ex.getName(), ex.getValue());
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, INVALID_NUMBER_MESSAGE);
     }
 
-    //Illegal argument
+    /**
+     * Handles Jakarta Bean Validation constraint violations.
+     *
+     * @param ex validation exception containing constraint violations
+     * @return 400 Bad Request with validation message
+     */
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ErrorResponse> handleConstraintViolation(ConstraintViolationException ex) {
+        String message = ex.getConstraintViolations()
+                .stream()
+                .map(ConstraintViolation::getMessage)
+                .collect(Collectors.joining(", "));
+
+        log.warn("Constraint violation: {}", message);
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, message);
+    }
+
+    /**
+     * Handles illegal argument exceptions from service/controller validation.
+     *
+     * @param ex illegal argument exception
+     * @return 400 Bad Request with exception message
+     */
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException ex) {
-        log.warn("Validation error handled: {}", ex.getMessage());
-        return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
+        log.warn("Illegal argument: {}", ex.getMessage());
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
-    //Bad JSON / malformed request
-    @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<ErrorResponse> handleNotReadable(HttpMessageNotReadableException ex) {
-        return buildResponse(HttpStatus.BAD_REQUEST, RomanNumeralsConstants.MALFORMED_QUERY_MESSAGE);
+    /**
+     * Handles requests to unmapped URLs.
+     *
+     * @param ex no handler found exception
+     * @return 404 Not Found
+     */
+    @ExceptionHandler(NoHandlerFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNotFound(NoHandlerFoundException ex) {
+        log.warn("No handler found for {} {}", ex.getHttpMethod(), ex.getRequestURL());
+        return buildErrorResponse(HttpStatus.NOT_FOUND, NOT_FOUND_MESSAGE);
     }
 
-    //Catch-all for any other exceptions
+    /**
+     * Handles unsupported HTTP methods.
+     *
+     * @param ex HTTP request method not supported exception
+     * @return 405 Method Not Allowed
+     */
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ErrorResponse> handleMethodNotAllowed(HttpRequestMethodNotSupportedException ex) {
+        log.warn("HTTP method not supported: {}", ex.getMethod());
+        return buildErrorResponse(HttpStatus.METHOD_NOT_ALLOWED, METHOD_NOT_ALLOWED_MESSAGE);
+    }
+
+    /**
+     * Handles {@link InvalidRomanNumeralException} thrown when a request violates
+     * domain-specific business rules related to Roman numeral conversion.
+     * <p>
+     * This includes scenarios such as:
+     * <ul>
+     *   <li>Input value outside the supported range (e.g., less than 1 or greater than 3999)</li>
+     *   <li>Invalid range inputs where {@code min >= max}</li>
+     *   <li>Any other domain validation failures specific to Roman numeral logic</li>
+     * </ul>
+     *
+     * @param ex the {@link InvalidRomanNumeralException} containing validation details
+     * @return {@link ResponseEntity} with HTTP status {@code 400 Bad Request} and a
+     *         structured {@link ErrorResponse} body describing the error
+     */
+    @ExceptionHandler(InvalidRomanNumeralException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidRoman(InvalidRomanNumeralException ex) {
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
+    /**
+     * Handles all unhandled exceptions.
+     *
+     * @param ex generic exception
+     * @return 500 Internal Server Error
+     */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneric(Exception ex) {
-        log.error("Unhandled exception: {}", ex.getMessage());
-        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, RomanNumeralsConstants.INTERNAL_SERVER_ERROR_MESSAGE);
+        log.error("Unhandled exception occurred", ex.getMessage());
+        return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR_MESSAGE);
     }
 
-    //Common builder method
-    private ResponseEntity<ErrorResponse> buildResponse(HttpStatus status, String message) {
-        ErrorResponse error = new ErrorResponse(
+    private ResponseEntity<ErrorResponse> buildErrorResponse(HttpStatus status, String message) {
+        ErrorResponse errorResponse = new ErrorResponse(
                 Instant.now(),
                 status.value(),
                 status.getReasonPhrase(),
                 message
         );
-        return new ResponseEntity<>(error, status);
+
+        return ResponseEntity.status(status).body(errorResponse);
     }
 }

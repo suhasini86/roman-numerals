@@ -1,5 +1,6 @@
 package com.adobe.aem.romannumerals.dto;
 
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
@@ -9,7 +10,7 @@ import lombok.Getter;
  */
 @Builder
 @Getter
-@Schema(description = "Successful conversion response containing the original integer and its Roman numeral")
+@Schema(description = "Successful conversion response containing the original integer and its Roman numeral representation")
 public class RomanNumeralResponse {
 
     @Schema(description = "The original integer input", example = "42")
