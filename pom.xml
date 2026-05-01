@@ -9,9 +9,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.converter</groupId>
-	<artifactId>roman-numeral-convertor</artifactId>
+	<artifactId>roman-numeral-converter</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>roman-numeral-convertor</name>
+	<name>roman-numeral-converter</name>
 	<description>Roman Numeral Converter</description>
 
 	<properties>

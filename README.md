@@ -40,7 +40,7 @@ Convert an integer to its Roman numeral representation with the following constr
 
 ● Input outside this range is considered invalid
 
-● Only integer → Roman conversion is supporte
+● Only integer → Roman conversion is supported
 
 ## Architecture
 
@@ -72,7 +72,7 @@ Convert an integer to its Roman numeral representation with the following constr
 git clone https://github.com/suhasini86/roman-numerals.git
 ```
 
-2. Pre-requisite checks for required frameworks
+2. Prerequisites for required frameworks
 
 ```
 java -version
@@ -93,11 +93,11 @@ docker-compose up -d
 ```
 
 The docker compose will spin the whole docker infra. The
-whole process should take around 2 to 3 mins depending on the underlying machine. Output will be as shown below, with status of various services:
+whole process should take around 2 to 3 minutes depending on the underlying machine. Output will be as shown below, with status of various services:
 
 ![img_3.png](images/grafana/docker-compose-status.png)
 
-Use the below command to refresh the status of the services until all the services up.
+Use the below command to refresh the status of the services until all the services are up.
 
 ```
 docker-compose -f docker-compose.yml ps
@@ -120,7 +120,7 @@ docker-compose -f docker-compose.yml ps
 
 5. To run the application in standalone mode without DevOps or observability capabilities, execute the following commands in the terminal. This will start the application using the standalone profile, which is configured to operate without observability features.
 
-Powershell
+PowerShell
 ``` bash
 > $env:SPRING_PROFILES_ACTIVE = "standalone"
 > mvn spring-boot:run
@@ -214,7 +214,7 @@ Open the report:
 | Integration | RomanNumeralControllerIntegrationTest | Full Spring Boot context             |
 | Integration | RomanNumeralsApplicationTests         | Application context loads            |
 | Exception   | GlobalExceptionHandlerTest            | Exception handling coverage          |
-| Exception   | InvalidRomanNumeralExceptionTest      | Domain Specific exceptions tes       |
+| Exception   | InvalidRomanNumeralExceptionTest      | Domain Specific exceptions test       |
 | Load Tests  | RomanNumeralApiLoadTest               | Concurrent load testing              |
 ------------------------------------------------------------------------
 
@@ -446,21 +446,4 @@ Endpoint: GET /romannumeral?min={integer}&max={integer}
 1. [Roman Numeral Wikipedia Reference](https://simple.wikipedia.org/wiki/Roman_numerals)
 2. [spring-boot](https://spring.io/projects/spring-boot)
 3. [docker-compose](https://docs.docker.com/compose/)
-4. [Grafana-Data Sources](https://grafana.com/docs/grafana/latest/datasources/)
-
-
-
-
-
-
-
-
-
-
-
-
-   
-
-
-
-
+4. [Grafana-Prometheus-Loki-Data Sources](https://grafana.com/docs/grafana/latest/datasources/)
