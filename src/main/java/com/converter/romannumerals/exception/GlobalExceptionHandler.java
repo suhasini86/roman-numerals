@@ -1,6 +1,7 @@
 package com.converter.romannumerals.exception;
 
 import com.converter.romannumerals.dto.ErrorResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
@@ -9,12 +10,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.web.bind.UnsatisfiedServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
 import java.time.Instant;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.converter.romannumerals.constants.RomanNumeralsConstants.*;
@@ -31,17 +35,38 @@ public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-    /**
-     * Handles missing required request parameters.
-     *
-     * @param ex the exception thrown by Spring when a required parameter is absent
-     * @return 400 Bad Request with a descriptive message
-     */
-    @ExceptionHandler(MissingServletRequestParameterException.class)
-    public ResponseEntity<ErrorResponse> handleMissingParam(MissingServletRequestParameterException ex) {
-        log.warn("Missing request parameter: {}", ex.getParameterName());
-        return buildErrorResponse(HttpStatus.BAD_REQUEST, MISSING_QUERY_ERR_MSG);
-    }
+//    /**
+//     * Handles missing required request parameters.
+//     *
+//     * @param ex the exception thrown by Spring when a required parameter is absent
+//     * @return 400 Bad Request with a descriptive message
+//     */
+//    @ExceptionHandler(MissingServletRequestParameterException.class)
+//    public ResponseEntity<ErrorResponse> handleMissingParams(MissingServletRequestParameterException ex, HttpServletRequest request) {
+//        log.warn("Missing request parameter: {}", ex.getParameterName());
+//
+//        //Collect all parameters whose value is empty or missing
+//        List<String> emptyParams = request.getParameterMap().entrySet().stream()
+//                .filter(entry -> {
+//
+//                    String[] values = entry.getValue();
+//                    return values == null || values.length == 0
+//                            || (values.length == 1  && (values[0] == null || values[0].isBlank()));
+//                    }).map(Map.Entry::getKey)
+//                .sorted()
+//                .toList();
+//
+//        String message;
+//        if (emptyParams.size() > 1) {
+//            message = emptyParams.stream().map( p -> "'" + p + "'")
+//                    .collect(Collectors.joining(", "))
+//                    + " must not be empty";
+//        } else {
+//            message =  ex.getParameterName() + " must not be empty";
+//        }
+//
+//        return buildErrorResponse(HttpStatus.BAD_REQUEST, message);
+//    }
 
     /**
      * Handles invalid parameter type conversion.
@@ -50,9 +75,36 @@ public class GlobalExceptionHandler {
      * @return 400 Bad Request with validation message
      */
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ResponseEntity<ErrorResponse> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
+    public ResponseEntity<ErrorResponse> handleTypeMismatch(
+            MethodArgumentTypeMismatchException ex,
+            HttpServletRequest request) {
+
         log.warn("Invalid request parameter: {}={}", ex.getName(), ex.getValue());
-        return buildErrorResponse(HttpStatus.BAD_REQUEST, INVALID_NUMBER_MESSAGE);
+
+        List<String> invalidParams = request.getParameterMap().entrySet().stream()
+                .filter(entry -> isInvalidInteger(entry.getValue()))
+                .map(Map.Entry::getKey)
+                .sorted()
+                .toList();
+
+        String message = invalidParams.size() > 1
+                ? String.join(", ", invalidParams) + " must be valid integers between 1 and 3999"
+                : ex.getName() + " must be a valid integer between 1 and 3999";
+
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, message);
+    }
+
+    @ExceptionHandler(UnsatisfiedServletRequestParameterException.class)
+    public ResponseEntity<ErrorResponse> handleUnsatisfiedParams(
+            UnsatisfiedServletRequestParameterException ex,
+            HttpServletRequest request) {
+
+        String message =
+                "Invalid request. Use query or (min and max) but not both" ;
+
+        log.warn("Unsatisfied request [{}]: {}", request.getRequestURI(), message);
+
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, message);
     }
 
     /**
@@ -96,25 +148,11 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(HttpStatus.METHOD_NOT_ALLOWED, METHOD_NOT_ALLOWED_MESSAGE);
     }
 
-    /**
-     * Handles {@link InvalidRomanNumeralException} thrown when a request violates
-     * domain-specific business rules related to Roman numeral conversion.
-     * <p>
-     * This includes scenarios such as:
-     * <ul>
-     *   <li>Input value outside the supported range (e.g., less than 1 or greater than 255)</li>
-     *   <li>Invalid range inputs where {@code min >= max}</li>
-     * </ul>
-     *
-     * @param ex the {@link InvalidRomanNumeralException} containing validation details
-     * @return {@link ResponseEntity} with HTTP status {@code 400 Bad Request} and a
-     *         structured {@link ErrorResponse} body describing the error
-     */
-    @ExceptionHandler(InvalidRomanNumeralException.class)
-    public ResponseEntity<ErrorResponse> handleInvalidRoman(InvalidRomanNumeralException ex) {
+
+    @ExceptionHandler(InvalidRequestException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidRequest(InvalidRequestException ex) {
         return buildErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
-
     /**
      * Handles all unhandled exceptions.
      *
@@ -136,5 +174,24 @@ public class GlobalExceptionHandler {
         );
 
         return ResponseEntity.status(status).body(errorResponse);
+    }
+    private boolean isInvalidInteger(String[] values) {
+
+        if (values == null || values.length == 0) {
+            return false;
+        }
+
+        String value = values[0];
+
+        if (value == null || value.isBlank()) {
+            return true;
+        }
+
+        try {
+            Integer.parseInt(value.trim());
+            return false;
+        } catch (NumberFormatException e) {
+            return true;
+        }
     }
 }

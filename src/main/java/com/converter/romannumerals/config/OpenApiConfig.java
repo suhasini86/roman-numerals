@@ -30,8 +30,10 @@ public class OpenApiConfig {
         return new OpenAPI()
                 .info(new Info()
                         .title("Roman Numerals Converter API")
-                        .description("A Spring Boot microservice that converts integers (1-255) "
-                                + "Built with full observability, extensive test coverage, and")
+                        .description("""
+                                Converts integers (1-3999) to Roman numeral strings.
+                                Supports string-value queries and parallel range queries using java 21 virtual threads.
+                                Built with full observability, extensive test coverage, and comprehensive API documentation.""")
                         .version("1.0.0")
                         .contact(new Contact()
                                 .name("Suhasini")

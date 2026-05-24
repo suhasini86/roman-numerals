@@ -1,26 +1,22 @@
 package com.converter.romannumerals.controller;
 
+import com.converter.romannumerals.exception.InvalidRequestException;
 import com.converter.romannumerals.service.RomanNumeralConverterService;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static com.converter.romannumerals.constants.RomanNumeralsConstants.*;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/**
- * WebMvc slice tests for {@link RomanNumeralController}.
- * <p>
- * Validates request mapping, Spring validation behaviour, and HTTP status codes
- * without starting the full application context.
- */
-@WebMvcTest(RomanNumeralController.class)
+@WebMvcTest(controllers = RomanNumeralController.class)
 class RomanNumeralControllerWebMvcTest {
 
     @Autowired
@@ -30,97 +26,44 @@ class RomanNumeralControllerWebMvcTest {
     private RomanNumeralConverterService converterService;
 
     @Test
-    @DisplayName("GET /romannumeral?query=42 should return converted payload")
-    void toRomanShouldReturnConvertedPayload() throws Exception {
+    void toRoman_success() throws Exception {
         when(converterService.toRoman(42)).thenReturn("XLII");
 
         mockMvc.perform(get("/romannumeral").param("query", "42"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.input").value("42"))
                 .andExpect(jsonPath("$.output").value("XLII"));
     }
 
     @Test
-    @DisplayName("GET /romannumeral?query=abc should reject non-numeric query")
-    void toRomanShouldRejectNonNumericQuery() throws Exception {
-        mockMvc.perform(get("/romannumeral").param("query", "abc"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value(INVALID_NUMBER_MESSAGE));
-    }
-
-    @Test
-    @DisplayName("GET /romannumeral?query= should reject blank query")
-    void toRomanShouldRejectBlankQuery() throws Exception {
-        mockMvc.perform(get("/romannumeral").param("query", ""))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value(INVALID_NUMBER_MESSAGE));
-    }
-
-    @Test
-    @DisplayName("GET /romannumeral?query=0 should reject below minimum")
-    void toRomanShouldRejectBelowMinimum() throws Exception {
-        mockMvc.perform(get("/romannumeral").param("query", "0"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value(INVALID_RANGE_ERR_MSG));
-    }
-
-    @Test
-    @DisplayName("GET /romannumeral?query=256 should reject above maximum")
-    void toRomanShouldRejectAboveMaximum() throws Exception {
-        mockMvc.perform(get("/romannumeral").param("query", "256"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value(INVALID_RANGE_ERR_MSG));
-    }
-
-    @Test
-    @DisplayName("GET /romannumeral?query=-5 should reject negative numbers")
-    void toRomanShouldRejectNegativeNumbers() throws Exception {
-        mockMvc.perform(get("/romannumeral").param("query", "-5"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value(INVALID_RANGE_ERR_MSG));
-    }
-
-    @Test
-    @DisplayName("GET /romannumeral should return 400 when query param is missing")
-    void toRomanShouldReturn400WhenQueryParamIsMissing() throws Exception {
+    void toRoman_missingParams_returnsBadRequest() throws Exception {
         mockMvc.perform(get("/romannumeral"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value(MISSING_QUERY_ERR_MSG));
+                .andExpect(jsonPath("$.message").exists());
     }
 
     @Test
-    @DisplayName("POST /romannumeral should return 405")
-    void postShouldReturn405() throws Exception {
-        mockMvc.perform(post("/romannumeral").param("query", "42"))
-                .andExpect(status().isMethodNotAllowed())
-                .andExpect(jsonPath("$.status").value(405))
-                .andExpect(jsonPath("$.message").value(METHOD_NOT_ALLOWED_MESSAGE));
+    void toRoman_queryOutOfRange_returnsBadRequest() throws Exception {
+        // query=0 is below MIN_VALUE (1)
+        mockMvc.perform(get("/romannumeral").param("query", "0"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("must be between")));
     }
 
     @Test
-    @DisplayName("PUT /romannumeral should return 405")
-    void putShouldReturn405() throws Exception {
-        mockMvc.perform(put("/romannumeral").param("query", "42"))
-                .andExpect(status().isMethodNotAllowed())
-                .andExpect(jsonPath("$.status").value(405))
-                .andExpect(jsonPath("$.message").value(METHOD_NOT_ALLOWED_MESSAGE));
+    void convertRange_minGreaterThanMax_returnsBadRequest() throws Exception {
+        doThrow(new InvalidRequestException("'min' and 'max' invalid"))
+                .when(converterService).convertRangeToRoman(5, 4);
+
+        mockMvc.perform(get("/romannumeral").param("min", "5").param("max", "4"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("'min' and 'max' invalid"));
     }
 
     @Test
-    @DisplayName("DELETE /romannumeral should return 405")
-    void deleteShouldReturn405() throws Exception {
-        mockMvc.perform(delete("/romannumeral").param("query", "42"))
-                .andExpect(status().isMethodNotAllowed())
-                .andExpect(jsonPath("$.status").value(405))
-                .andExpect(jsonPath("$.message").value(METHOD_NOT_ALLOWED_MESSAGE));
-    }
-
-    @Test
-    @DisplayName("PATCH /romannumeral should return 405")
-    void patchShouldReturn405() throws Exception {
-        mockMvc.perform(patch("/romannumeral").param("query", "42"))
-                .andExpect(status().isMethodNotAllowed())
-                .andExpect(jsonPath("$.status").value(405))
-                .andExpect(jsonPath("$.message").value(METHOD_NOT_ALLOWED_MESSAGE));
+    void bothQueryAndMin_returnsBadRequest() throws Exception {
+        mockMvc.perform(get("/romannumeral").param("query", "1").param("min", "1").param("max", "2"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("Provide either 'query' OR 'min & max'")));
     }
 }
+

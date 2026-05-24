@@ -29,18 +29,70 @@ While the core problem is intentionally simple, the goal of this project is to d
 - [CI/CD Pipeline](#cicd-pipeline)
 - [Observability](#observability)
 - [Sample API Request/Responses](#sample-api-requestresponses)
-- [Future Enhancements](#future-enhancements)
 - [References](#references)
 
 ## Problem Statement
 
-Convert an integer to its Roman numeral representation with the following constraints:
+Build a REST API service that converts integers to their Roman numeral representation with support for single-value and range-based conversion requests.
+### Functional Requirements
+#### 1. Single Integer Conversion
+Example:
+```
+/romannumeral?query=10
+```
+Requirements:
 
-● Supported range: 1–255
+● Only integer-to-Roman numeral conversion is supported.
 
-● Input outside this range is considered invalid
+● Supported input range is 1–3999.
 
-● Only integer → Roman conversion is supported
+● Inputs outside the supported range are considered invalid.
+
+● Invalid, missing, duplicate, or non-integer query parameters must return appropriate error responses.
+#### 2. Range-Based Conversion
+Example:
+```
+/romannumeral?min=1&max=3
+```
+Requirements:
+
+● Both min and max query parameters are mandatory.
+
+● Supported input range for min and max is 1–3999.
+
+● The max value must be greater than or equal to the min value.
+
+● The service must process conversions concurrently using multithreading.
+
+● Results must be returned in ascending order from min to max.
+
+Successful responses must return a JSON payload in the following format:
+```
+{
+  "conversions": [
+    { "input": "1", "output": "I" },
+    { "input": "2", "output": "II" },
+    { "input": "3", "output": "III" }
+  ]
+}
+```
+
+### Non-Functional Requirements
+#### 3. Production Readiness / DevOps Capabilities
+
+The application should include production-oriented operational capabilities such as:
+
+● Structured logging
+
+● Metrics and monitoring support
+
+● Centralized exception handling
+
+● Health/readiness endpoints
+
+● Docker containerization for consistent deployment and execution
+
+The service should be designed with maintainability, scalability, and operational observability in mind.
 
 ## Architecture
 
@@ -143,6 +195,8 @@ The application includes comprehensive testing coverage across functional, integ
 
 ### Sample test
 
+#### Single Integer Conversion Test
+
 > http://localhost:8080/romannumeral?query=255
 
 Output:
@@ -153,6 +207,23 @@ Output:
 "output": "CCLV"
 }
 ```
+#### Range-Based Conversion Test
+> http://localhost:8080/romannumeral?min=1&max=5
+
+Output:
+
+```
+{
+"conversions": [
+    { "input": "1", "output": "I" },
+    { "input": "2", "output": "II" },
+    { "input": "3", "output": "III" },
+    { "input": "4", "output": "IV" },
+    { "input": "5", "output": "V" }
+  ]
+}
+```
+
 
 ### Running Unit/Integration Tests
 Execute the following commands from the root directory of the application:
@@ -237,11 +308,14 @@ Http Status Code - 200
 ```
 
 ### Error Request
-
+Single integer conversion with invalid input
 ```
 curl -X GET "http://localhost:8080/romannumeral?query=abc"
 ```
-
+Ranger Based Request with invalid input
+```
+curl -X GET "http://localhost:8080/romannumeral?min=10&max=abc"
+```
 ### Error Response
 
 ```
@@ -258,6 +332,7 @@ Http Status Code - 400
 ```bash
 curl -X GET "http://localhost:8080/dfgdfgdf"
 ```
+
 ### Not Found Response
 ```
 Http Status Code - 404
@@ -269,8 +344,13 @@ Http Status Code - 404
 }
 ```
 ### Method Not Allowed Request
+Single Integer
 ```
 curl -X POST "http://localhost:8080/romannumeral?query=42"
+```
+Range-Based Request
+```
+curl -X POST "http://localhost:8080/romannumeral?min=1&max=10"
 ```
 ### Method Not Allowed Response
 ```
@@ -395,51 +475,6 @@ The CI/CD pipeline includes:
 ### Pipeline Status
 Sample workflow run from github actions,
 ![img_12.png](images/ci-cd.png)
-
-
-## Future Enhancements
-
-### Extension 1: Range 1--3999
-The conversion algorithm already supports the full standard Roman numeral range (1-3999). The `VALUES` and `SYMBOLS` arrays include all mappings up to M (1000). To enable this, only one constant change is required:
-
-// Changes to support range 1-3999:
-In `RomanNumeralsConstants.java` change the MAX_VALUE constant from 255 to 3999.
-
-No changes to the conversion logic are needed — only updating the `MAX_VALUE` constant and corresponding test assertions.
-
-### Extension 2: Range Query API
-Add a new query format for bulk conversion of a range of integers using parallel computation.
-
-Endpoint: GET /romannumeral?min={integer}&max={integer}
-
-### Rules:
-
-    ● Both min and max are required and must be valid integers
-    ● min must be less than max
-    ● Both must be within the supported range (1-255, or 1-3999 with Extension 1)
-    ● Conversions are computed in parallel using Java multithreading
-    ● Results are returned in ascending order
-
-    Example Request: GET /romannumeral?min=1&max=3
-    
-    Example Response:
-    {
-    "conversions": [
-        { "input": "1", "output": "I" },
-        { "input": "2", "output": "II" },
-        { "input": "3", "output": "III" }
-        ]
-    }
-
-### Implementation Approach:
-
-● Use `IntStream.rangeClosed(min, max).parallel()` or a `ForkJoinPool` to compute conversions concurrently
-
-● Collect results into a sorted list before serializing the response
-    
-● Add a `RangeConversionResponse` DTO with a `List<RomanNumeralResponse>` conversions field
-    
-● Validate `min < max` and both within range in the controller/service layer.
 
 ## References
 

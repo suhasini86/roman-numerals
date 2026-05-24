@@ -12,14 +12,15 @@ public class RomanNumeralsConstants {
         throw new UnsupportedOperationException("Utility class - can not be instantiated.");
     }
 
+    public static final String QUERY = "query";
+    public static final String MIN = "min";
+    public static final String MAX = "max";
+
     /** Minimum accepted integer value for conversion. */
     public static final int MIN_VALUE = 1;
 
     /** Maximum accepted integer value for conversion. */
-    public static final int MAX_VALUE = 255;
-
-    /** Error message returned when the query parameter is not a valid integer. */
-    public static final String INVALID_NUMBER_MESSAGE = "Query must be a valid integer";
+    public static final int MAX_VALUE = 3999;
 
     /** Generic internal server error message. */
     public static final String INTERNAL_SERVER_ERROR_MESSAGE = "Internal Server Error";
@@ -32,9 +33,6 @@ public class RomanNumeralsConstants {
 
     /** Error message returned when the input integer is outside the valid range. */
     public static final String INVALID_RANGE_ERR_MSG =
-            "Query range must be between " + MIN_VALUE + " and " + MAX_VALUE;
+            " must be between " + MIN_VALUE + " and " + MAX_VALUE;
 
-    /** Error message returned when the required query parameter is not provided */
-    public static final String MISSING_QUERY_ERR_MSG =
-            "Query parameter is missing";
 }

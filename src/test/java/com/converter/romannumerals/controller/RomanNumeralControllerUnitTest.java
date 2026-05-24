@@ -1,40 +1,88 @@
 package com.converter.romannumerals.controller;
 
-import com.converter.romannumerals.dto.RomanNumeralResponse;
 import com.converter.romannumerals.service.RomanNumeralConverterService;
-import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.mockito.Mockito;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.Mockito.mock;
+import jakarta.servlet.http.HttpServletRequest;
+
+import java.lang.reflect.Method;
+import java.util.Map;
+
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
-/**
- * Plain unit tests for {@link RomanNumeralController}.
- * <p>
- * Tests the controller logic directly without Spring context.
- * Note: Jakarta Bean Validation (e.g. {@code @Min}, {@code @Max})
- * is not enforced in plain unit tests - those constraints are covered
- * by the WebMvc slice tests.
- */
 class RomanNumeralControllerUnitTest {
 
-    private final RomanNumeralConverterService converterService = mock(RomanNumeralConverterService.class);
-    private final RomanNumeralController controller = new RomanNumeralController(converterService);
+    private RomanNumeralController controller;
+    private RomanNumeralConverterService svc;
+
+    @BeforeEach
+    void setup() {
+        svc = Mockito.mock(RomanNumeralConverterService.class);
+        controller = new RomanNumeralController(svc);
+    }
+
+    private void invokeValidate(HttpServletRequest request) throws Exception {
+        Method m = RomanNumeralController.class.getDeclaredMethod("validateExclusiveParams", HttpServletRequest.class);
+        m.setAccessible(true);
+        m.invoke(controller, request);
+    }
 
     @Test
-    @DisplayName("toRoman should return successful response for valid input")
-    void toRomanShouldReturnSuccessfulResponse() {
-        when(converterService.toRoman(10)).thenReturn("X");
+    void validateExclusiveParams_bothQueryAndMin_throws() throws Exception {
+        HttpServletRequest req = Mockito.mock(HttpServletRequest.class);
+        when(req.getParameter("query")).thenReturn("1");
+        when(req.getParameter("min")).thenReturn("1");
 
-        ResponseEntity<RomanNumeralResponse> response = controller.toRoman(10);
+        assertThatThrownBy(() -> invokeValidate(req))
+                .satisfies(t -> {
+                    Throwable root = t.getCause();
+                    org.assertj.core.api.Assertions.assertThat(root).isInstanceOf(RuntimeException.class);
+                    org.assertj.core.api.Assertions.assertThat(root.getMessage()).contains("Provide either 'query' OR 'min & max'");
+                });
+    }
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals("10", response.getBody().getInput());
-        assertEquals("X", response.getBody().getOutput());
+    @Test
+    void validateExclusiveParams_minAndMaxEmpty_throwsMinMaxMessage() throws Exception {
+        HttpServletRequest req = Mockito.mock(HttpServletRequest.class);
+        when(req.getParameter("query")).thenReturn(null);
+        when(req.getParameter("min")).thenReturn("");
+        when(req.getParameter("max")).thenReturn("");
+
+        // parameterMap with empty arrays to exercise length == 0 branch
+        when(req.getParameterMap()).thenReturn(Map.of(
+                "min", new String[0],
+                "max", new String[0]
+        ));
+
+        assertThatThrownBy(() -> invokeValidate(req))
+                .satisfies(t -> {
+                    Throwable root = t.getCause();
+                    org.assertj.core.api.Assertions.assertThat(root).isInstanceOf(RuntimeException.class);
+                    org.assertj.core.api.Assertions.assertThat(root.getMessage()).contains("min and max must not be empty");
+                });
+    }
+
+    @Test
+    void validateExclusiveParams_queryMissing_throwsQueryMessage() throws Exception {
+        HttpServletRequest req = Mockito.mock(HttpServletRequest.class);
+        when(req.getParameter("query")).thenReturn(null);
+        when(req.getParameter("min")).thenReturn("1");
+        when(req.getParameter("max")).thenReturn(null);
+
+        when(req.getParameterMap()).thenReturn(Map.of(
+                "min", new String[]{"1"},
+                "max", new String[]{(String) null}
+        ));
+
+        assertThatThrownBy(() -> invokeValidate(req))
+                .satisfies(t -> {
+                    Throwable root = t.getCause();
+                    org.assertj.core.api.Assertions.assertThat(root).isInstanceOf(RuntimeException.class);
+                    org.assertj.core.api.Assertions.assertThat(root.getMessage()).contains("query must not be empty");
+                });
     }
 }
+

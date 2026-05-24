@@ -1,129 +1,140 @@
 package com.converter.romannumerals.exception;
 
-import com.converter.romannumerals.dto.ErrorResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
-import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
-import org.springframework.web.bind.MissingServletRequestParameterException;
-import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.bind.UnsatisfiedServletRequestParameterException;
 import org.springframework.web.servlet.NoHandlerFoundException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
-import java.util.Set;
+import java.util.Collections;
 
-import static com.converter.romannumerals.constants.RomanNumeralsConstants.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.Mockito.mock;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
-/**
- * Unit tests for {@link GlobalExceptionHandler}.
- * <p>
- * Verifies that each exception type is mapped to the correct HTTP status and message.
- */
 class GlobalExceptionHandlerTest {
 
-    private final GlobalExceptionHandler handler = new GlobalExceptionHandler();
+    private GlobalExceptionHandler handler;
+    private MockHttpServletRequest request;
 
-    @Test
-    @DisplayName("Should map missing param to 400 Bad Request")
-    void shouldHandleMissingQueryParam() throws MissingServletRequestParameterException {
-        MissingServletRequestParameterException ex =
-                new MissingServletRequestParameterException("query", "String");
-
-        ResponseEntity<ErrorResponse> response = handler.handleMissingParam(ex);
-
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals(MISSING_QUERY_ERR_MSG, response.getBody().getMessage());
+    @BeforeEach
+    void setup() {
+        handler = new GlobalExceptionHandler();
+        request = new MockHttpServletRequest();
+        request.setRequestURI("/romannumeral");
     }
 
     @Test
-    @DisplayName("Should map type mismatch to 400 Bad Request")
-    void shouldHandleTypeMismatch() {
-        MethodArgumentTypeMismatchException ex = mock(MethodArgumentTypeMismatchException.class);
+    void handleTypeMismatch_buildsBadRequest() {
+        MethodArgumentTypeMismatchException ex = Mockito.mock(MethodArgumentTypeMismatchException.class);
         when(ex.getName()).thenReturn("query");
         when(ex.getValue()).thenReturn("abc");
 
-        ResponseEntity<ErrorResponse> response = handler.handleTypeMismatch(ex);
+        // single invalid param
+        request.addParameter("query", "abc");
 
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals(INVALID_NUMBER_MESSAGE, response.getBody().getMessage());
+        var resp = handler.handleTypeMismatch(ex, request);
+        assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(resp.getBody()).isNotNull();
+        assertThat(resp.getBody().message()).containsIgnoringCase("valid integer");
     }
 
     @Test
-    @DisplayName("Should map constraint violation to 400 Bad Request")
-    void shouldHandleConstraintViolation() {
-        @SuppressWarnings("unchecked")
-        ConstraintViolation<Object> violation = mock(ConstraintViolation.class);
-        when(violation.getMessage()).thenReturn(INVALID_RANGE_ERR_MSG);
+    void handleTypeMismatch_multipleInvalidParams_buildsCombinedMessage() {
+        MethodArgumentTypeMismatchException ex = Mockito.mock(MethodArgumentTypeMismatchException.class);
+        when(ex.getName()).thenReturn("query");
+        when(ex.getValue()).thenReturn("abc");
 
-        ConstraintViolationException ex = new ConstraintViolationException(Set.of(violation));
+        // add two invalid parameters to request
+        request.addParameter("a", "x");
+        request.addParameter("b", "y");
 
-        ResponseEntity<ErrorResponse> response = handler.handleConstraintViolation(ex);
-
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals(INVALID_RANGE_ERR_MSG, response.getBody().getMessage());
+        var resp = handler.handleTypeMismatch(ex, request);
+        assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(resp.getBody().message()).contains("a, b");
     }
 
     @Test
-    @DisplayName("Should map method not supported to 405")
-    void shouldHandleMethodNotAllowed() {
-        HttpRequestMethodNotSupportedException ex =
-                new HttpRequestMethodNotSupportedException("POST");
-
-        ResponseEntity<ErrorResponse> response = handler.handleMethodNotAllowed(ex);
-
-        assertEquals(HttpStatus.METHOD_NOT_ALLOWED, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals(METHOD_NOT_ALLOWED_MESSAGE, response.getBody().getMessage());
-        assertEquals(405, response.getBody().getStatus());
+    void handleUnsatisfiedParams_returnsBadRequest() {
+        UnsatisfiedServletRequestParameterException ex = Mockito.mock(UnsatisfiedServletRequestParameterException.class);
+        var resp = handler.handleUnsatisfiedParams(ex, request);
+        assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(resp.getBody().message()).contains("Invalid request");
     }
 
     @Test
-    @DisplayName("Should map no handler found to 404")
-    void shouldHandleNotFound() {
-        NoHandlerFoundException ex = new NoHandlerFoundException("GET", "/dfgdfgdf",
-                new org.springframework.http.HttpHeaders());
+    void handleConstraintViolation_returnsBadRequest() {
+        ConstraintViolation<?> violation = Mockito.mock(ConstraintViolation.class);
+        when(violation.getMessage()).thenReturn("must be between 1 and 3999");
+        ConstraintViolationException ex = new ConstraintViolationException(Collections.singleton(violation));
 
-        ResponseEntity<ErrorResponse> response = handler.handleNotFound(ex);
-
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals(NOT_FOUND_MESSAGE, response.getBody().getMessage());
-        assertEquals(404, response.getBody().getStatus());
+        var resp = handler.handleConstraintViolation(ex);
+        assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(resp.getBody().message()).contains("must be between");
     }
 
     @Test
-    @DisplayName("Should map unhandled exception to 500 Internal Server Error")
-    void shouldHandleGenericException() {
-        ResponseEntity<ErrorResponse> response = handler.handleGeneric(new RuntimeException("boom"));
-
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals(INTERNAL_SERVER_ERROR_MESSAGE, response.getBody().getMessage());
-        assertNotNull(response.getBody().getTimestamp());
-        assertEquals(500, response.getBody().getStatus());
+    void handleNotFound_returns404() throws Exception {
+        NoHandlerFoundException ex = new NoHandlerFoundException("GET", "/foo", null);
+        var resp = handler.handleNotFound(ex);
+        assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(resp.getBody().message()).containsIgnoringCase("not found");
     }
 
     @Test
-    @DisplayName("Should map InvalidRomanNumeralException to 400 Bad Request")
-    void shouldHandleInvalidRomanNumeralException() {
-        InvalidRomanNumeralException ex =
-                new InvalidRomanNumeralException(INVALID_RANGE_ERR_MSG);
-
-        ResponseEntity<ErrorResponse> response =
-                handler.handleInvalidRoman(ex);
-
-        assertEquals(400, response.getStatusCode().value());
-        assertNotNull(response.getBody());
-        assertEquals(INVALID_RANGE_ERR_MSG, response.getBody().getMessage());
+    void handleMethodNotAllowed_returns405() {
+        HttpRequestMethodNotSupportedException ex = new HttpRequestMethodNotSupportedException("POST");
+        var resp = handler.handleMethodNotAllowed(ex);
+        assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.METHOD_NOT_ALLOWED);
+        assertThat(resp.getBody().message()).containsIgnoringCase("HTTP method not supported");
     }
 
+    @Test
+    void handleInvalidRequest_returnsBadRequest() {
+        InvalidRequestException ex = new InvalidRequestException("bad params");
+        var resp = handler.handleInvalidRequest(ex);
+        assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(resp.getBody().message()).isEqualTo("bad params");
+    }
+
+    @Test
+    void handleGeneric_returnsInternalServerError() {
+        Exception ex = new RuntimeException("boom");
+        var resp = handler.handleGeneric(ex);
+        assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+        assertThat(resp.getBody().message()).containsIgnoringCase("Internal Server Error");
+    }
+
+    @Test
+    void isInvalidInteger_variousInputs() throws Exception {
+        var method = GlobalExceptionHandler.class.getDeclaredMethod("isInvalidInteger", String[].class);
+        method.setAccessible(true);
+
+        // null -> false
+        Boolean r1 = (Boolean) method.invoke(handler, new Object[]{null});
+        assertThat(r1).isFalse();
+
+        // empty array -> false
+        Boolean r2 = (Boolean) method.invoke(handler, new Object[]{new String[0]});
+        assertThat(r2).isFalse();
+
+        // blank value -> true
+        Boolean r3 = (Boolean) method.invoke(handler, new Object[]{new String[]{"   "}});
+        assertThat(r3).isTrue();
+
+        // non-numeric -> true
+        Boolean r4 = (Boolean) method.invoke(handler, new Object[]{new String[]{"abc"}});
+        assertThat(r4).isTrue();
+
+        // numeric -> false
+        Boolean r5 = (Boolean) method.invoke(handler, new Object[]{new String[]{"42"}});
+        assertThat(r5).isFalse();
+    }
 }
+

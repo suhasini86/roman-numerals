@@ -1,83 +1,60 @@
 package com.converter.romannumerals.service;
 
-import com.converter.romannumerals.exception.InvalidRomanNumeralException;
-import org.junit.jupiter.api.BeforeEach;
+import com.converter.romannumerals.dto.RomanNumeralResponse;
+import com.converter.romannumerals.exception.InvalidRequestException;
 import org.junit.jupiter.api.Test;
 
-import static com.converter.romannumerals.constants.RomanNumeralsConstants.MAX_VALUE;
-import static com.converter.romannumerals.constants.RomanNumeralsConstants.MIN_VALUE;
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class RomanNumeralConverterServiceTest {
 
-    private RomanNumeralConverterService service;
-
-    @BeforeEach
-    void setUp() {
-        service = new RomanNumeralConverterService();
-    }
-
+    private final RomanNumeralConverterService service = new RomanNumeralConverterService();
 
     @Test
-    void shouldConvertComplexNumbers() {
-        assertEquals("IV", service.toRoman(4));
-        assertEquals("IX", service.toRoman(9));
-        assertEquals("XL", service.toRoman(40));
-        assertEquals("XC", service.toRoman(90));
+    void performRomanConversion_basicValues() {
+        assertEquals("I", RomanNumeralConverterService.performRomanConversion(1));
+        assertEquals("IV", RomanNumeralConverterService.performRomanConversion(4));
+        assertEquals("IX", RomanNumeralConverterService.performRomanConversion(9));
+        assertEquals("XL", RomanNumeralConverterService.performRomanConversion(40));
+        assertEquals("XLIV", RomanNumeralConverterService.performRomanConversion(44));
+        assertEquals("CCLV", RomanNumeralConverterService.performRomanConversion(255));
+        assertEquals("MMMCMXCIX", RomanNumeralConverterService.performRomanConversion(3999));
     }
 
     @Test
-    void shouldConvertTypicalNumbers() {
-        assertEquals("LVIII", service.toRoman(58));
-        assertEquals("CCLV", service.toRoman(255));
-        assertEquals("XLII", service.toRoman(42));
-    }
+    void toRoman_valid_and_invalid() {
+        // valid
+        String roman = service.toRoman(42);
+        assertEquals("XLII", roman);
 
+        // invalid low
+        assertThrows(InvalidRequestException.class, () -> service.toRoman(0));
 
-    @Test
-    void shouldConvertMinimumValue() {
-        assertEquals("I", service.toRoman(MIN_VALUE));
-    }
-
-    @Test
-    void shouldConvertMaximumValue() {
-        assertEquals("CCLV", service.toRoman(MAX_VALUE));
+        // invalid high
+        assertThrows(InvalidRequestException.class, () -> service.toRoman(4000));
     }
 
     @Test
-    void shouldThrowExceptionWhenBelowMinimum() {
-        InvalidRomanNumeralException ex = assertThrows(
-                InvalidRomanNumeralException.class,
-                () -> service.toRoman(MIN_VALUE - 1)
-        );
+    void convertRangeToRoman_happyPath_and_invalid() {
+        List<RomanNumeralResponse> list = service.convertRangeToRoman(1, 3);
+        assertEquals(3, list.size());
+        assertEquals("I", list.get(0).output());
+        assertEquals("II", list.get(1).output());
+        assertEquals("III", list.get(2).output());
 
-        assertNotNull(ex.getMessage());
+        // invalid when min >= max
+        InvalidRequestException ex = assertThrows(InvalidRequestException.class,
+                () -> service.convertRangeToRoman(5, 4));
+        assertTrue(ex.getMessage().contains("cannot be greater than"));
     }
 
     @Test
-    void shouldThrowExceptionWhenAboveMaximum() {
-        InvalidRomanNumeralException ex = assertThrows(
-                InvalidRomanNumeralException.class,
-                () -> service.toRoman(MAX_VALUE + 1)
-        );
-
-        assertNotNull(ex.getMessage());
-    }
-
-
-    @Test
-    void shouldConvertUsingStaticMethod() {
-        assertEquals("X", RomanNumeralConverterService.performRomanConversion(10));
-        assertEquals("XLII", RomanNumeralConverterService.performRomanConversion(42));
-    }
-
-
-    @Test
-    void shouldHandleSequentialNumbersCorrectly() {
-        for (int i = 1; i <= 20; i++) {
-            String result = service.toRoman(i);
-            assertNotNull(result);
-            assertFalse(result.isEmpty());
-        }
+    void shutdownExecutor_runsWithoutError() {
+        // ensure shutdownExecutor executes (coverage for @PreDestroy method)
+        service.shutdownExecutor();
+        // no assertions - just ensure no exception
     }
 }
+
