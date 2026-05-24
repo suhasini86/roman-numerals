@@ -1,8 +1,8 @@
 # roman-numeral-converter
 
-This project implements a Roman numeral conversion service that converts integers to Roman numerals for a constrained range of 1 to 255.
+This project implements a Roman numeral conversion service that converts integers to their Roman numeral representation with support for single-value and range-based conversion in a constrained range of 1 to 3999.
 
-While the core problem is intentionally simple, the goal of this project is to demonstrate how to design and build a production-ready microservice, including:
+The goal of this project is to demonstrate how to design and build a production-ready microservice, including:
 
 ● RESTful API design
 
@@ -292,7 +292,7 @@ Open the report:
 ## Sample API Request/Responses
 
 ### Successful Request
-
+#### Single Integer Conversion
 ```
 curl -X GET "http://localhost:8080/romannumeral?query=200"
 ```
@@ -304,6 +304,23 @@ Http Status Code - 200
 {
   "input": "200",
   "output": "CC"
+}
+```
+
+#### Range-Based Conversion Test
+> http://localhost:8080/romannumeral?min=1&max=5
+
+Successful Response:
+
+```
+{
+"conversions": [
+{ "input": "1", "output": "I" },
+{ "input": "2", "output": "II" },
+{ "input": "3", "output": "III" },
+{ "input": "4", "output": "IV" },
+{ "input": "5", "output": "V" }
+]
 }
 ```
 
