@@ -103,7 +103,7 @@ The service should be designed with maintainability, scalability, and operationa
 
 | Component | Technology | Version |
 |-----------|-----------|---------|
-| Language | Java | 17      |
+| Language | Java | 21      |
 | Framework | Spring Boot | 3.5.14  | 
 | Build Tool | Maven | 3.9.2   |
 | Testing | JUnit 5, Mockito, REST Assured | Latest  |
