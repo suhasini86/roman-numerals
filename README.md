@@ -60,7 +60,7 @@ Requirements:
 
 ● Supported input range for min and max is 1–3999.
 
-● The max value must be greater than or equal to the min value.
+● The max value must be greater than the min value.
 
 ● The service must process conversions concurrently using multithreading.
 
