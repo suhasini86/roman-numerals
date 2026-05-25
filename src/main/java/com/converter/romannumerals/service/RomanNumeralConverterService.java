@@ -37,7 +37,7 @@ public class RomanNumeralConverterService {
             "M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"
     };
 
-    private final ExecutorService rangeExecutor=  Executors.newVirtualThreadPerTaskExecutor();
+    private final ExecutorService rangeExecutor =  Executors.newVirtualThreadPerTaskExecutor();
 
     /**
      * Convert an integer to Roman numeral
