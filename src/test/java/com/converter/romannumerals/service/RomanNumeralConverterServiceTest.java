@@ -47,7 +47,7 @@ class RomanNumeralConverterServiceTest {
         // invalid when min >= max
         InvalidRequestException ex = assertThrows(InvalidRequestException.class,
                 () -> service.convertRangeToRoman(5, 4));
-        assertTrue(ex.getMessage().contains("cannot be greater than"));
+        assertTrue(ex.getMessage().contains("must be less than"));
     }
 
     @Test

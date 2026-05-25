@@ -32,7 +32,7 @@ public class OpenApiConfig {
                         .title("Roman Numerals Converter API")
                         .description("""
                                 Converts integers (1-3999) to Roman numeral strings.
-                                Supports string-value queries and parallel range queries using java 21 virtual threads.
+                                Supports single-value queries and parallel range queries using Java 21 virtual threads.
                                 Built with full observability, extensive test coverage, and comprehensive API documentation.""")
                         .version("1.0.0")
                         .contact(new Contact()

@@ -15,8 +15,8 @@ import static org.mockito.Mockito.when;
 
 class RomanNumeralControllerUnitTest {
 
-    private RomanNumeralController controller;
-    private RomanNumeralConverterService svc;
+    private RomanNumeralController controller; // 2 usages
+    private RomanNumeralConverterService svc; // 2 usages
 
     @BeforeEach
     void setup() {
@@ -24,7 +24,7 @@ class RomanNumeralControllerUnitTest {
         controller = new RomanNumeralController(svc);
     }
 
-    private void invokeValidate(HttpServletRequest request) throws Exception {
+    private void invokeValidate(HttpServletRequest request) throws Exception { // 4 usages
         Method m = RomanNumeralController.class.getDeclaredMethod("validateExclusiveParams", HttpServletRequest.class);
         m.setAccessible(true);
         m.invoke(controller, request);
@@ -37,11 +37,11 @@ class RomanNumeralControllerUnitTest {
         when(req.getParameter("min")).thenReturn("1");
 
         assertThatThrownBy(() -> invokeValidate(req))
-                .satisfies(t -> {
+                .satisfies(( t -> {
                     Throwable root = t.getCause();
                     org.assertj.core.api.Assertions.assertThat(root).isInstanceOf(RuntimeException.class);
-                    org.assertj.core.api.Assertions.assertThat(root.getMessage()).contains("Provide either 'query' OR 'min & max'");
-                });
+                    org.assertj.core.api.Assertions.assertThat(root.getMessage()).contains("'query' and 'min'/'max' parameters cannot be used together");
+                }));
     }
 
     @Test
@@ -58,31 +58,49 @@ class RomanNumeralControllerUnitTest {
         ));
 
         assertThatThrownBy(() -> invokeValidate(req))
-                .satisfies(t -> {
+                .satisfies(( t -> {
                     Throwable root = t.getCause();
                     org.assertj.core.api.Assertions.assertThat(root).isInstanceOf(RuntimeException.class);
-                    org.assertj.core.api.Assertions.assertThat(root.getMessage()).contains("min and max must not be empty");
-                });
+                    org.assertj.core.api.Assertions.assertThat(root.getMessage()).contains("Both 'min' and 'max' parameters cannot be empty");
+                }));
     }
 
     @Test
     void validateExclusiveParams_queryMissing_throwsQueryMessage() throws Exception {
         HttpServletRequest req = Mockito.mock(HttpServletRequest.class);
         when(req.getParameter("query")).thenReturn(null);
+        when(req.getParameter("min")).thenReturn(null);
+        when(req.getParameter("max")).thenReturn(null);
+
+        when(req.getParameterMap()).thenReturn(Map.of(
+                "query", new String[]{}
+        ));
+
+        assertThatThrownBy(() -> invokeValidate(req))
+                .satisfies(( t -> {
+                    Throwable root = t.getCause();
+                    org.assertj.core.api.Assertions.assertThat(root).isInstanceOf(RuntimeException.class);
+                    org.assertj.core.api.Assertions.assertThat(root.getMessage()).contains("The 'query' parameter cannot be empty");
+                }));
+    }
+
+    @Test
+    void validateExclusiveParams_minPresent_maxMissing_throwsMinMaxMessage() throws Exception {
+        HttpServletRequest req = Mockito.mock(HttpServletRequest.class);
+        when(req.getParameter("query")).thenReturn(null);
         when(req.getParameter("min")).thenReturn("1");
         when(req.getParameter("max")).thenReturn(null);
 
         when(req.getParameterMap()).thenReturn(Map.of(
-                "min", new String[]{"1"},
-                "max", new String[]{(String) null}
+                "min", new String[]{"1"}
         ));
 
         assertThatThrownBy(() -> invokeValidate(req))
-                .satisfies(t -> {
+                .satisfies(( t -> {
                     Throwable root = t.getCause();
                     org.assertj.core.api.Assertions.assertThat(root).isInstanceOf(RuntimeException.class);
-                    org.assertj.core.api.Assertions.assertThat(root.getMessage()).contains("query must not be empty");
-                });
+                    org.assertj.core.api.Assertions.assertThat(root.getMessage()).contains("Both 'min' and 'max' parameters cannot be empty");
+                }));
     }
-}
 
+}

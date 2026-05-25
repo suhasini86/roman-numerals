@@ -100,9 +100,9 @@ public class RomanNumeralController {
             )
     })
     @Observed(name = "romannumeral.convert", contextualName = "convert-to-roman")
-    @GetMapping(params = {"query"})
+    @GetMapping(params = {QUERY})
     public ResponseEntity<RomanNumeralResponse> toRoman(
-            @Parameter(description = "Integer to convert ("+MIN_VALUE+"-"+MAX_VALUE+")", required = false, example = "42")
+            @Parameter(description = "Integer to convert ("+MIN_VALUE+"-"+MAX_VALUE+")", example = "42")
             @RequestParam(name = QUERY, required = false)
             @Min(value = MIN_VALUE, message = QUERY + INVALID_RANGE_ERR_MSG)
             @Max(value = MAX_VALUE, message = QUERY + INVALID_RANGE_ERR_MSG)
@@ -137,7 +137,7 @@ public class RomanNumeralController {
                             schema =  @Schema(implementation = RangeConversionResponse.class),
                             examples = @ExampleObject(value = """
                             {"conversions": [
-                            {"input": "1","output": "I"
+                            {"input": "1","output": "I"},
                             {"input": "2","output": "II"},
                             {"input": "3","output": "III"},
                             {"input": "4","output": "IV"},
@@ -173,15 +173,15 @@ public class RomanNumeralController {
     })
 
     @Observed(name = "romannumeral.convertRange", contextualName = "convert-range-to-roman")
-    @GetMapping(params = {"min", "max"})
+    @GetMapping(params = {MIN, MAX})
     public ResponseEntity<RangeConversionResponse> convertRangeToRoman(
-            @Parameter(description = "Start of range (inclusive)"+MIN_VALUE+"-"+MAX_VALUE+")", required = false, example = "1")
+            @Parameter(description = "Start of range (inclusive)"+MIN_VALUE+"-"+MAX_VALUE+")", example = "1")
             @RequestParam(name = MIN, required = false)
             @Min(value = MIN_VALUE, message = MIN + INVALID_RANGE_ERR_MSG)
             @Max(value = MAX_VALUE, message = MIN + INVALID_RANGE_ERR_MSG)
             Integer min,
 
-            @Parameter(description = "End of range (inclusive)"+MIN_VALUE+"-"+MAX_VALUE+")", required = false, example = "4")
+            @Parameter(description = "End of range (inclusive)"+MIN_VALUE+"-"+MAX_VALUE+")", example = "4")
             @RequestParam(name = MAX, required = false)
             @Min(value = MIN_VALUE, message = MAX + INVALID_RANGE_ERR_MSG)
             @Max(value = MAX_VALUE, message = MAX + INVALID_RANGE_ERR_MSG)
@@ -199,36 +199,20 @@ public class RomanNumeralController {
 
     private void validateExclusiveParams(HttpServletRequest request) {
 
-        boolean hasQuery = StringUtils.hasText(request.getParameter("query"));
-        boolean hasMin = StringUtils.hasText(request.getParameter("min"));
-        boolean hasMax = StringUtils.hasText(request.getParameter("max"));
+        boolean hasQuery = StringUtils.hasText(request.getParameter(QUERY));
+        boolean hasMin = StringUtils.hasText(request.getParameter(MIN));
+        boolean hasMax = StringUtils.hasText(request.getParameter(MAX));
 
         // XOR rule enforcement
         if (hasQuery && (hasMin || hasMax)) {
-            throw new InvalidRequestException(
-                    "Provide either 'query' OR 'min & max', not both."
-            );
+            throw new InvalidRequestException(INVALID_QUERY_PARAM_COMBINATION_ERR_MSG);
         }
-
         if (!hasQuery && (!hasMin || !hasMax)) {
 
-            //Collect all parameters whose value is empty or missing
-            List<String> emptyParams = request.getParameterMap().entrySet().stream()
-                    .filter(entry -> {
+            String message = request.getParameterMap().containsKey(QUERY)
+                    ? QUERY_EMPTY_ERR_MSG
+                    : MIN_MAX_EMPTY_ERR_MSG;
 
-                        String[] values = entry.getValue();
-                        return values == null || values.length == 0
-                                || (values.length == 1  && (values[0] == null || values[0].isBlank()));
-                    }).map(Map.Entry::getKey)
-                    .sorted()
-                    .toList();
-
-            String message;
-            if (emptyParams.size() > 1) {
-                message =  "min and max must not be empty";
-            } else {
-                message = "query must not be empty";
-            }
                 throw new InvalidRequestException(message);
         }
     }

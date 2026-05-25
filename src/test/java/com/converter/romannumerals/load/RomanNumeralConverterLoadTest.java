@@ -25,7 +25,8 @@ import static org.assertj.core.api.Assertions.*;
  * Tests are marked with @Tag("loadtest") and can be run separately using:
  * {@code mvn test -Dgroups=loadtest}
  */
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+                                properties = {"rate-limit.enabled=false"})
 @Slf4j
 @DisplayName("Roman Numeral Converter Load Tests")
 class RomanNumeralConverterLoadTest {
@@ -252,7 +253,19 @@ class RomanNumeralConverterLoadTest {
         }
 
         executorService.shutdown();
-        executorService.awaitTermination(durationSeconds + 10, TimeUnit.SECONDS);
+        try{
+            if (!executorService.awaitTermination(durationSeconds + 10, TimeUnit.SECONDS)) {
+                log.warn("Sustained load executor did not terminate within timeout - forcing shutdown");
+                executorService.shutdownNow();
+                if (!executorService.awaitTermination(30, TimeUnit.SECONDS)) {
+                    log.error("Sustained load executor did not terminate after shutdowns");
+                }
+            }
+        } catch (InterruptedException e) {
+            executorService.shutdownNow();
+            Thread.currentThread().interrupt();
+            throw e;
+        }
 
         // Calculate metrics
         double avgResponseTime = responseTimes.stream()
@@ -347,7 +360,19 @@ class RomanNumeralConverterLoadTest {
         }
 
         executorService.shutdown();
-        executorService.awaitTermination(5, TimeUnit.MINUTES);
+        try{
+            if (!executorService.awaitTermination(5, TimeUnit.SECONDS)) {
+                log.warn("Sustained load executor did not terminate within timeout - forcing shutdown");
+                executorService.shutdownNow();
+                if (!executorService.awaitTermination(30, TimeUnit.SECONDS)) {
+                    log.error("Sustained load executor did not terminate after shutdowns");
+                }
+            }
+        } catch (InterruptedException e) {
+            executorService.shutdownNow();
+            Thread.currentThread().interrupt();
+            throw e;
+        }
 
         long endTime = System.currentTimeMillis();
         double avgResponseTime = responseTimes.stream()

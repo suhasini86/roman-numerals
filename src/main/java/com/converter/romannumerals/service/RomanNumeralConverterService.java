@@ -28,7 +28,6 @@ import static com.converter.romannumerals.constants.RomanNumeralsConstants.MIN_V
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class RomanNumeralConverterService {
     private static final int[] VALUES = {
             1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1
@@ -38,7 +37,7 @@ public class RomanNumeralConverterService {
             "M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"
     };
 
-    ExecutorService rangeExecutor=  Executors.newVirtualThreadPerTaskExecutor();
+    private final ExecutorService rangeExecutor=  Executors.newVirtualThreadPerTaskExecutor();
 
     /**
      * Convert an integer to Roman numeral
@@ -90,11 +89,10 @@ public class RomanNumeralConverterService {
     public List<RomanNumeralResponse> convertRangeToRoman(int min, int max) {
 
         if (min >= max) {
-            throw new InvalidRequestException("Parameter 'min'("+ min +") value cannot be greater than " +
-                    "'max' ("+max +").");
+            throw new InvalidRequestException("Invalid range: 'min'("+ min +") value must be less than " +
+                    "'max' ("+max +"). Please ensure 'min' is smaller than 'max'.");
         }
 
-        int size = max-min+1;
         List<CompletableFuture<RomanNumeralResponse>> futures = new ArrayList<>();
         for (int i = min; i <= max; i++) {
             final int value = i;

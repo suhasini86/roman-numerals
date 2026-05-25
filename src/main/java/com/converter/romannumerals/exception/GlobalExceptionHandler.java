@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
-import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.UnsatisfiedServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -35,39 +34,6 @@ public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-//    /**
-//     * Handles missing required request parameters.
-//     *
-//     * @param ex the exception thrown by Spring when a required parameter is absent
-//     * @return 400 Bad Request with a descriptive message
-//     */
-//    @ExceptionHandler(MissingServletRequestParameterException.class)
-//    public ResponseEntity<ErrorResponse> handleMissingParams(MissingServletRequestParameterException ex, HttpServletRequest request) {
-//        log.warn("Missing request parameter: {}", ex.getParameterName());
-//
-//        //Collect all parameters whose value is empty or missing
-//        List<String> emptyParams = request.getParameterMap().entrySet().stream()
-//                .filter(entry -> {
-//
-//                    String[] values = entry.getValue();
-//                    return values == null || values.length == 0
-//                            || (values.length == 1  && (values[0] == null || values[0].isBlank()));
-//                    }).map(Map.Entry::getKey)
-//                .sorted()
-//                .toList();
-//
-//        String message;
-//        if (emptyParams.size() > 1) {
-//            message = emptyParams.stream().map( p -> "'" + p + "'")
-//                    .collect(Collectors.joining(", "))
-//                    + " must not be empty";
-//        } else {
-//            message =  ex.getParameterName() + " must not be empty";
-//        }
-//
-//        return buildErrorResponse(HttpStatus.BAD_REQUEST, message);
-//    }
-
     /**
      * Handles invalid parameter type conversion.
      *
@@ -88,8 +54,8 @@ public class GlobalExceptionHandler {
                 .toList();
 
         String message = invalidParams.size() > 1
-                ? String.join(", ", invalidParams) + " must be valid integers between 1 and 3999"
-                : ex.getName() + " must be a valid integer between 1 and 3999";
+                ? String.join(", ", invalidParams) + " values must be valid integers between " + MIN_VALUE + " and " + MAX_VALUE + "."
+                : ex.getName() + INVALID_RANGE_ERR_MSG;
 
         return buildErrorResponse(HttpStatus.BAD_REQUEST, message);
     }
@@ -99,12 +65,10 @@ public class GlobalExceptionHandler {
             UnsatisfiedServletRequestParameterException ex,
             HttpServletRequest request) {
 
-        String message =
-                "Invalid request. Use query or (min and max) but not both" ;
 
-        log.warn("Unsatisfied request [{}]: {}", request.getRequestURI(), message);
+        log.warn("Unsatisfied request [{}]: {}", request.getRequestURI(), ex.getMessage());
 
-        return buildErrorResponse(HttpStatus.BAD_REQUEST, message);
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, INVALID_REQUEST_ERR_MSG);
     }
 
     /**

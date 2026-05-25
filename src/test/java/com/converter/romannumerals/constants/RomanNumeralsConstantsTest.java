@@ -28,6 +28,7 @@ class RomanNumeralsConstantsTest {
         assertEquals("Internal Server Error", RomanNumeralsConstants.INTERNAL_SERVER_ERROR_MESSAGE);
         assertEquals("HTTP method not supported", RomanNumeralsConstants.METHOD_NOT_ALLOWED_MESSAGE);
         assertEquals("Requested resource not found", RomanNumeralsConstants.NOT_FOUND_MESSAGE);
-        assertEquals(" must be between 1 and 3999", RomanNumeralsConstants.INVALID_RANGE_ERR_MSG);
+        assertEquals(" value must be a valid integer between 1 and 3999.",
+                RomanNumeralsConstants.INVALID_RANGE_ERR_MSG);
     }
 }

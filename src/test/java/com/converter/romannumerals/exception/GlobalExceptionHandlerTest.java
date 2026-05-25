@@ -1,8 +1,8 @@
 package com.converter.romannumerals.exception;
 
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -42,7 +42,7 @@ class GlobalExceptionHandlerTest {
         var resp = handler.handleTypeMismatch(ex, request);
         assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(resp.getBody()).isNotNull();
-        assertThat(resp.getBody().message()).containsIgnoringCase("valid integer");
+        assertThat(resp.getBody().message()).containsIgnoringCase("value must be a valid integer between");
     }
 
     @Test
@@ -57,7 +57,8 @@ class GlobalExceptionHandlerTest {
 
         var resp = handler.handleTypeMismatch(ex, request);
         assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        assertThat(resp.getBody().message()).contains("a, b");
+        Assertions.assertNotNull(resp.getBody());
+        assertThat(resp.getBody().message()).contains("values must be valid integers between");
     }
 
     @Test
@@ -65,18 +66,19 @@ class GlobalExceptionHandlerTest {
         UnsatisfiedServletRequestParameterException ex = Mockito.mock(UnsatisfiedServletRequestParameterException.class);
         var resp = handler.handleUnsatisfiedParams(ex, request);
         assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        assertThat(resp.getBody().message()).contains("Invalid request");
+        Assertions.assertNotNull(resp.getBody());
+        assertThat(resp.getBody().message()).contains("Please provide either a 'query' parameter or both 'min' and 'max' parameters.");
     }
 
     @Test
     void handleConstraintViolation_returnsBadRequest() {
         ConstraintViolation<?> violation = Mockito.mock(ConstraintViolation.class);
-        when(violation.getMessage()).thenReturn("must be between 1 and 3999");
+        when(violation.getMessage()).thenReturn("query value must be a valid integer between 1 and 3999.");
         ConstraintViolationException ex = new ConstraintViolationException(Collections.singleton(violation));
 
         var resp = handler.handleConstraintViolation(ex);
         assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        assertThat(resp.getBody().message()).contains("must be between");
+        assertThat(resp.getBody().message()).contains("value must be a valid integer between");
     }
 
     @Test
@@ -84,6 +86,7 @@ class GlobalExceptionHandlerTest {
         NoHandlerFoundException ex = new NoHandlerFoundException("GET", "/foo", null);
         var resp = handler.handleNotFound(ex);
         assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        Assertions.assertNotNull(resp.getBody());
         assertThat(resp.getBody().message()).containsIgnoringCase("not found");
     }
 
@@ -92,6 +95,7 @@ class GlobalExceptionHandlerTest {
         HttpRequestMethodNotSupportedException ex = new HttpRequestMethodNotSupportedException("POST");
         var resp = handler.handleMethodNotAllowed(ex);
         assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.METHOD_NOT_ALLOWED);
+        Assertions.assertNotNull(resp.getBody());
         assertThat(resp.getBody().message()).containsIgnoringCase("HTTP method not supported");
     }
 
@@ -100,6 +104,7 @@ class GlobalExceptionHandlerTest {
         InvalidRequestException ex = new InvalidRequestException("bad params");
         var resp = handler.handleInvalidRequest(ex);
         assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        Assertions.assertNotNull(resp.getBody());
         assertThat(resp.getBody().message()).isEqualTo("bad params");
     }
 
@@ -135,6 +140,10 @@ class GlobalExceptionHandlerTest {
         // numeric -> false
         Boolean r5 = (Boolean) method.invoke(handler, new Object[]{new String[]{"42"}});
         assertThat(r5).isFalse();
+
+        // null value in array -> true (covers value == null branch)
+        Boolean r6 = (Boolean) method.invoke(handler, new Object[]{new String[]{null}});
+        assertThat(r6).isTrue();
     }
 }
 

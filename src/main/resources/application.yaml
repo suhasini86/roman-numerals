@@ -7,6 +7,12 @@ spring:
     resources:
       add-mappings: false
 
+#Rate limit configuration
+rate-limit:
+  enabled: true
+  requests: 50              # Maximum requests per time window per IP
+  time-window-seconds: 60   # Time window in seconds
+
 management:
   metrics:
     tags:

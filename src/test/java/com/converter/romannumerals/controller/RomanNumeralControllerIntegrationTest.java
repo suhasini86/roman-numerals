@@ -15,6 +15,7 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class RomanNumeralControllerIntegrationTest {
 
@@ -39,7 +40,7 @@ class RomanNumeralControllerIntegrationTest {
         assertThat(resp.getStatusCode().is4xxClientError()).isTrue();
         assertThat(resp.getBody()).containsKey("message");
         String msg = (String) resp.getBody().get("message");
-        assertThat(msg).containsIgnoringCase("valid integer");
+        assertThat(msg).containsIgnoringCase("value must be a valid integer between");
     }
 
     @Test
@@ -49,19 +50,20 @@ class RomanNumeralControllerIntegrationTest {
                 HttpMethod.GET,
                 HttpEntity.EMPTY,
                 new ParameterizedTypeReference<RangeConversionResponse>() {
-                });
+                }
+        );
 
         assertThat(resp.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(resp.getBody()).isNotNull();
         assertThat(resp.getBody().conversions()).hasSize(3);
         assertThat(resp.getBody().conversions().get(0).output()).isEqualTo("I");
 
-        // min >= max should return 400
+        // min > max should return 400
         ResponseEntity<Map> bad = restTemplate.getForEntity(
                 "/romannumeral?min=5&max=4", Map.class);
         assertThat(bad.getStatusCode().is4xxClientError()).isTrue();
         assertThat(bad.getBody()).containsKey("message");
-        assertThat((String) bad.getBody().get("message")).contains("cannot be greater than");
+        assertThat((String) bad.getBody().get("message")).contains("must be less than");
     }
 
     @Test
@@ -72,10 +74,12 @@ class RomanNumeralControllerIntegrationTest {
         assertThat(resp.getStatusCode().is4xxClientError()).isTrue();
         assertThat(resp.getBody()).containsKey("message");
         String message = (String) resp.getBody().get("message");
-        // Spring may return UnsatisfiedServletRequestParameterException or controller's own InvalidRequestException
+
+        // Spring may return MissingServletRequestParameterException or controller's own InvalidRequestException
         assertThat(message).satisfiesAnyOf(
-                m -> assertThat(m).contains("Missing required parameters"),
-                m -> assertThat(m).contains("Invalid request. Use query or (min and max)"));
+                msg -> assertThat(msg).contains("Missing required parameters"),
+                msg -> assertThat(msg).contains("Please provide either a 'query' parameter or both 'min' and 'max' parameters")
+        );
     }
 }
 

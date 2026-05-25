@@ -246,10 +246,10 @@ Performance testing is implemented to validate system behavior under concurrent 
 #### Run load tests
 Use the below command to run a load test on this API
 ``` bash
-    mvn test -Dtest=RomanNumeralApiLoadTest
+    mvn test -Dtest=RomanNumeralConverterLoadTest
 ```
 
-The `RomanNumeralApiLoadTest` simulates 400 requests with 20 concurrent threads, including an initial warm-up phase. The test enforces the following performance criteria:
+The `RomanNumeralConverterLoadTest` simulates 400 requests with 20 concurrent threads, including an initial warm-up phase. The test enforces the following performance criteria:
 
 ● Zero request failures
 
@@ -285,8 +285,11 @@ Open the report:
 | Integration | RomanNumeralControllerIntegrationTest | Full Spring Boot context             |
 | Integration | RomanNumeralsApplicationTests         | Application context loads            |
 | Exception   | GlobalExceptionHandlerTest            | Exception handling coverage          |
-| Exception   | InvalidRomanNumeralExceptionTest      | Domain Specific exceptions test       |
-| Load Tests  | RomanNumeralApiLoadTest               | Concurrent load testing              |
+| Exception   | InvalidRequestExceptionTest           | Custom validation exception behavior |
+| Load Tests  | RateLimitingFilterTest                | Rate limiting filter logic           |
+| Load Tests  | RateLimitPropertiesTest               | Rate limit configuration propereties |
+| Load Tests  | RomanNumeralConverterLoadTest         | Concurrent load testing              |
+
 ------------------------------------------------------------------------
 
 ## Sample API Request/Responses
@@ -329,6 +332,18 @@ Single integer conversion with invalid input
 ```
 curl -X GET "http://localhost:8080/romannumeral?query=abc"
 ```
+### Error Response
+
+```
+Http Status Code - 400
+{
+  "timestamp": "2026-04-27T00:00:00Z",
+  "status": 400,
+  "error": "Bad Request",
+  "message": "query value must be a valid integer between 1 and 3999."
+}
+```
+
 Ranger Based Request with invalid input
 ```
 curl -X GET "http://localhost:8080/romannumeral?min=10&max=abc"
@@ -341,7 +356,7 @@ Http Status Code - 400
   "timestamp": "2026-04-27T00:00:00Z",
   "status": 400,
   "error": "Bad Request",
-  "message": "Query must be a valid integer"
+  "message": ""max value must be a valid integer between 1 and 3999."
 }
 ```
 ### Not Found Request
@@ -361,14 +376,11 @@ Http Status Code - 404
 }
 ```
 ### Method Not Allowed Request
-Single Integer
+
 ```
 curl -X POST "http://localhost:8080/romannumeral?query=42"
 ```
-Range-Based Request
-```
-curl -X POST "http://localhost:8080/romannumeral?min=1&max=10"
-```
+
 ### Method Not Allowed Response
 ```
 Http Status Code - 405
@@ -379,6 +391,79 @@ Http Status Code - 405
   "message": "HTTP method not supported"
 }
 ```
+### Rate Limit Exceeded Request
+When more than 50 requests are sent from the same IP within 60 seconds:
+
+```
+curl -X GET "http://localhost:8080/romannumeral?query=42"
+```
+
+Rate Limit Exceeded Response
+
+```
+Http Status Code - 429
+{
+  "timestamp": "2026-04-27T00:00:00Z",
+  "status": 429,
+  "error": "Too Many Requests",
+  "message": "Rate limit exceeded. Please try again after 45 seconds."
+}
+```
+## Rate Limiting
+
+The application includes built-in per-IP rate limiting to protect the service from excessive requests and ensure fair usage across clients.
+
+### How it works:
+Rate limiting is implemented as a servlet filter (`RateLimitingFilter`) using a fixed-window counter algorithm. Each unique client IP address is tracked independently - when a client exceeds the configured request limit within the time window, subsequent requests receive a `429 Too Many Requests` response until the window resets.
+
+### Configuration:
+Rate limiting is configured in `application.yaml` and can be adjusted without code changes:
+
+```
+rate-limit:
+enabled: true        # Set to false to disable rate limiting
+max-requests: 50     # Maximum requests allowed per time window per IP
+time-window-seconds: 60  # Time window duration in seconds
+```
+
+ Property                        | Default | Description                                    |
+|---------------------------------------|---------|------------------------------------------------|
+| rate-limit.enabled | true    | Enable or disable rate limiting globally           |
+| rate-limit.max-requests   | 50      | Maximum number of requests per IP per time window |
+| rate-limit.time-window-seconds        | 60      | Duration of the rate limit window in seconds   |
+
+Response Headers:
+
+Every API response includes rate limit headers for client visibility:
+
+ Header                        | Default                                 |
+|---------------------------------------|--------------------------------|
+| X-Rate-Limit-Limit | Maximum requests allowed in the current window  |
+| X-Rate-Limit-Remaining   | Number of requests remaining in the current window |
+| Retry-After        | Seconds to wait before retrying (only on 429 responses) |
+
+
+Rate Limit Exceeded Response
+
+```
+Http Status Code - 429
+{
+  "timestamp": "2026-04-27T00:00:00Z",
+  "status": 429,
+  "error": "Too Many Requests",
+  "message": "Rate limit exceeded. Please try again after 45 seconds."
+}
+```
+#### Excluded Endpoints
+The following endpoints are not rate limited:
+
+* /actuator/* - Health checks and monitoring
+* /swagger-ui/* - API documentation UI
+* /v3/api-docs - OpenAPI specification
+
+#### Client IP Detection
+The filter supports proxy-aware IP detection. When running behind a load balancer or reverse proxy, the client IP is extracted from the 'X-Forwarded-For' header. If not present, the direct remote address is used.
+
 
 ## Error Handling
 
@@ -386,29 +471,30 @@ The application leverages a centralized exception handling mechanism implemented
 
 The following table outlines the supported exception mappings, corresponding HTTP status codes, and typical scenarios:
 
-| Exception Type                         | HTTP Status | Scenario                                  |
-|----------------------------------------|-------------|-------------------------------------------|
-| MissingServletRequestParameterException | 400         | query parameter not provided              |
-| MethodArgumentTypeMismatchException    | 400         | Empty/blank query, or value outside range |
-| ConstraintViolationException           | 400         | Non-numeric input (e.g., ?query=abc)      |
-| InvalidRomanNumeralException           | 400         | Type mismatch on request parameter        |
-| NoHandlerFoundException                | 404         | Malformed request body                    |
-| HttpRequestMethodNotSupportedException | 405         | Unsupported HTTP method (e.g., POST /romannumeral)|
-| Exception                              | 500         | Any unhandled exception                   |
+| Exception Type                      | HTTP Status | Scenario                                                   |
+|-------------------------------------|------------|------------------------------------------------------------|
+| UnsatisfiedServletRequestParameterException | 400        | Invalid parameter combination (query with min/max)         |
+| MethodArgumentTypeMismatchException | 400        | Empty/blank query, or value outside range                  |
+| ConstraintViolationException        | 400        | Value outside supported range (1-3999)                     |
+| InvalidRequestException             | 400        | Custom validation failures (empty params, invalid min/max) |
+| NoHandlerFoundException             | 404        | Malformed request body                                     |
+| HttpRequestMethodNotSupportedException | 405     |  Unsupported HTTP method (e.g., POST /romannumeral)        |
+| Rate limit exceeded                 | 429        | Too many requests from a single IP within the time window  |
+| Exception                           | 500        | Any unhandled exception                                    |
 
 ``` json
 {
   "timestamp": "2026-04-27T00:00:00Z",
   "status": 400,
   "error": "Bad Request",
-  "message": "Query must be a valid integer"
+  "message": "Query must be a valid integer between 1 and 3999."
 }
 ```
 
 ## Observability
 
 This project includes simple observability to monitor application behavior using metrics, traces, and logs.
-
+> **Note**: In a production environment, actuator endpoints would be secured via network isolation (separate management port) or Spring Security to restrict access to authorized monitoring systems only. For demonstration purposes, actuator endpoints are exposed without authentication in this project.
 ### Overview
 
 ### Metrics

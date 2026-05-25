@@ -13,7 +13,7 @@
     </appender>
 
     <!-- Application logs at DEBUG level -->
-    <logger name="com.adobe.aem" level="DEBUG"/>
+    <logger name="com.converter.romannumerals" level="DEBUG"/>
 
     <!-- OpenTelemetry logs at INFO level (suppresses DEBUG noise) -->
     <logger name="io.opentelemetry" level="INFO"/>
