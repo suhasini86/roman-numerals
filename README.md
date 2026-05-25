@@ -25,6 +25,7 @@ The goal of this project is to demonstrate how to design and build a production-
 - [Packaging Layout](#packaging-layout)
 - [How to build and deploy the application](#how-to-build-and-deploy-the-application)
 - [Testing](#testing)
+- [Rate Limiting](#rate-limiting)
 - [Error Handling](#error-handling)
 - [CI/CD Pipeline](#cicd-pipeline)
 - [Observability](#observability)
