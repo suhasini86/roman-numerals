@@ -38,6 +38,7 @@ public class GlobalExceptionHandler {
      * Handles invalid parameter type conversion.
      *
      * @param ex the exception thrown when request parameter cannot be converted
+     * @param request originating HTTP request whose parameters determine the error wording
      * @return 400 Bad Request with validation message
      */
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
@@ -60,6 +61,13 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(HttpStatus.BAD_REQUEST, message);
     }
 
+    /**
+     * Handles requests missing required servlet parameters implied by routing (e.g. wrong parameter combinations).
+     *
+     * @param ex unresolved parameter mapping exception from Spring MVC
+     * @param request the request that triggered the failure
+     * @return 400 Bad Request referring the client to supported parameter shapes
+     */
     @ExceptionHandler(UnsatisfiedServletRequestParameterException.class)
     public ResponseEntity<ErrorResponse> handleUnsatisfiedParams(
             UnsatisfiedServletRequestParameterException ex,
@@ -113,6 +121,12 @@ public class GlobalExceptionHandler {
     }
 
 
+    /**
+     * Maps domain validation failures from {@link InvalidRequestException} to HTTP 400.
+     *
+     * @param ex exception carrying a user-readable message describing the violation
+     * @return 400 Bad Request with that message in the body
+     */
     @ExceptionHandler(InvalidRequestException.class)
     public ResponseEntity<ErrorResponse> handleInvalidRequest(InvalidRequestException ex) {
         return buildErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
@@ -129,6 +143,13 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR_MESSAGE);
     }
 
+    /**
+     * Factory for standardized {@link ErrorResponse} payloads with RFC-style reason phrases.
+     *
+     * @param status HTTP status to return
+     * @param message client-facing explanation
+     * @return response entity with timestamp populated and uniform JSON shape
+     */
     private ResponseEntity<ErrorResponse> buildErrorResponse(HttpStatus status, String message) {
         ErrorResponse errorResponse = new ErrorResponse(
                 Instant.now(),
@@ -139,6 +160,13 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(status).body(errorResponse);
     }
+
+    /**
+     * Detects when a servlet parameter carries a blank or non-numeric value intended for integer parsing.
+     *
+     * @param values typically the singleton array from {@code ServletRequest#getParameterValues}
+     * @return {@code true} when absent, blank, or not parseable as an {@code int}
+     */
     private boolean isInvalidInteger(String[] values) {
 
         if (values == null || values.length == 0) {

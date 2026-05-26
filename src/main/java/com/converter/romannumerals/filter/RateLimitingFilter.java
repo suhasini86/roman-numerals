@@ -38,6 +38,14 @@ public class RateLimitingFilter extends OncePerRequestFilter {
             .maximumSize(10_000)
             .build();
 
+    /**
+     * Applies the configured per-IP request cap; on success attaches rate-limit headers and continues the chain.
+     * When the cap is exceeded, writes a JSON 429 response and aborts further processing.
+     *
+     * @param request the incoming HTTP servlet request
+     * @param response the servlet response (headers or error body may be set)
+     * @param filterChain remaining filters and the target servlet
+     */
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
@@ -99,6 +107,9 @@ public class RateLimitingFilter extends OncePerRequestFilter {
 
     /**
      * Exclude actuator, swagger, and OpenAPI endpoints from rate limiting.
+     *
+     * @param request incoming request whose path is inspected
+     * @return {@code true} when this filter must not run for the given path
      */
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
@@ -109,6 +120,12 @@ public class RateLimitingFilter extends OncePerRequestFilter {
                 || path.startsWith("/v3/api-docs");
     }
 
+    /**
+     * Resolves the client identity for counting; prefers the left-most address from {@code X-Forwarded-For} when present.
+     *
+     * @param request the current servlet request
+     * @return client IP chosen for rate limiting (never {@code null} for typical servlet containers)
+     */
     String getClientIp(HttpServletRequest request) {
         String xForwardedFor = request.getHeader("X-Forwarded-For");
 
@@ -120,13 +137,20 @@ public class RateLimitingFilter extends OncePerRequestFilter {
     }
 
     /**
-     * Holds the rate info for a single client.
-     * windowStart = start of the current window.
+     * Mutable per-client rate limit snapshot for one fixed-width time window.
      */
     static class ClientRateInfo {
+        /** Epoch millis when the current window started. */
         final long windowStart;
+        /** Number of counted requests started in {@link #windowStart}'s window. */
         final AtomicInteger requestCount;
 
+        /**
+         * Creates a fresh window counter anchored at {@code windowStart}.
+         *
+         * @param windowStart millis when this window opens
+         * @param requestCount mutable counter incremented per accepted request evaluation
+         */
         ClientRateInfo(long windowStart, AtomicInteger requestCount) {
             this.windowStart = windowStart;
             this.requestCount = requestCount;

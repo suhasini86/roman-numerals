@@ -44,7 +44,7 @@ public class RomanNumeralConverterService {
      *
      * @param number the integer to convert
      * @return Roman numeral representation
-     * @throws IllegalArgumentException if input is outside valid range
+     * @throws InvalidRequestException if input is outside valid range
      */
     @Observed(name = "romannumeral.converter", contextualName = "roman-conversion")
     public String toRoman(int number) {
@@ -85,6 +85,15 @@ public class RomanNumeralConverterService {
         }
     }
 
+    /**
+     * Convert each integer from {@code min} through {@code max} (inclusive) to Roman numerals in parallel using the
+     * configured virtual-thread executor.
+     *
+     * @param min inclusive lower bound
+     * @param max inclusive upper bound; must be strictly greater than {@code min}
+     * @return list of {@link RomanNumeralResponse} instances in ascending numeric order
+     * @throws InvalidRequestException if either bound is out of range or {@code min} is not less than {@code max}
+     */
     @Observed(name = "romannumeral.range.converter", contextualName = "range-roman-conversion")
     public List<RomanNumeralResponse> convertRangeToRoman(int min, int max) {
         validateRange(min);
@@ -108,6 +117,9 @@ public class RomanNumeralConverterService {
                 .toList();
     }
 
+    /**
+     * Releases the virtual-thread executor when the Spring context shuts down so pending tasks drain gracefully.
+     */
     @PreDestroy
     void shutdownExecutor() {
         rangeExecutor.shutdown();

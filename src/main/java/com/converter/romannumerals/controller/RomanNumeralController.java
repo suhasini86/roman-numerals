@@ -33,12 +33,12 @@ import java.util.stream.Collectors;
 import static com.converter.romannumerals.constants.RomanNumeralsConstants.*;
 
 /**
- * REST controller that exposes an endpoint for converting integers to Roman numerals.
+ * REST controller exposing integer-to-Roman numeral conversions.
  * <p>
- * The single {@code GET /romannumeral?query=<number>} endpoint accepts an integer
- * between 1 and 3999 and returns its Roman numeral representation.
- * Input validation is handled declaratively via Jakarta Bean Validation annotations
- * ({@code @Min}, {@code @Max}) combined with Spring's {@code @Validated}.
+ * Supports {@code GET /romannumeral?query=<number>} for a single value and
+ * {@code GET /romannumeral?min=<n>&max=<m>} for an inclusive range. Accepted integers
+ * are bounded by {@value RomanNumeralsConstants#MIN_VALUE} and {@value RomanNumeralsConstants#MAX_VALUE}.
+ * Input validation combines Jakarta Bean Validation ({@code @Min}, {@code @Max}) with Spring {@code @Validated}.
  */
 @RestController
 @RequiredArgsConstructor
@@ -172,6 +172,16 @@ public class RomanNumeralController {
             )
     })
 
+    /**
+     * Convert every integer in an inclusive {@code min}–{@code max} range to Roman numerals.
+     * Results are ordered from {@code min} to {@code max}; conversion work is delegated to the service layer.
+     *
+     * @param min     start of the range (inclusive), between {@value RomanNumeralsConstants#MIN_VALUE}
+     *                and {@value RomanNumeralsConstants#MAX_VALUE}
+     * @param max     end of the range (inclusive); must be greater than {@code min}
+     * @param request the incoming HTTP request, used for parameter exclusivity validation
+     * @return JSON payload listing each conversion in range order
+     */
     @Observed(name = "romannumeral.convertRange", contextualName = "convert-range-to-roman")
     @GetMapping(params = {MIN, MAX})
     public ResponseEntity<RangeConversionResponse> convertRangeToRoman(
@@ -197,6 +207,13 @@ public class RomanNumeralController {
         return ResponseEntity.ok(new RangeConversionResponse(conversions));
     }
 
+    /**
+     * Ensures the client uses exactly one invocation style: either {@code query}, or both {@code min} and {@code max},
+     * and that required parameters are present when chosen.
+     *
+     * @param request servlet request containing query parameter map
+     * @throws InvalidRequestException if parameters are mutually exclusive or incomplete
+     */
     private void validateExclusiveParams(HttpServletRequest request) {
 
         boolean hasQuery = StringUtils.hasText(request.getParameter(QUERY));

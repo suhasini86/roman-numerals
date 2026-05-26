@@ -5,6 +5,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * Response DTO for successful Roman numeral conversion.
+ *
+ * @param input  string rendering of the original integer argument
+ * @param output Roman numeral string produced by the converter
  */
 
 @Schema(description = "Successful conversion response containing the original integer and its Roman numeral representation")
