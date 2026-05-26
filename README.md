@@ -250,7 +250,7 @@ Use the below command to run a load test on this API
     mvn test -DexcludedGroups="" -DincludedGroups=loadtest
 ```
 
-The `RomanNumeralConverterLoadTest` simulates 400 requests with 20 concurrent threads, including an initial warm-up phase. The test enforces the following performance criteria:
+The `RomanNumeralConverterLoadTest` simulates 2000 requests with 200 concurrent threads, including an initial warm-up phase. The test enforces the following performance criteria:
 
 ● Zero request failures
 
