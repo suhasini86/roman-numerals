@@ -1,6 +1,8 @@
 package com.converter.romannumerals.filter;
 
 import com.converter.romannumerals.config.RateLimitProperties;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.Cache;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -13,9 +15,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.time.Instant;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -31,7 +32,11 @@ public class RateLimitingFilter extends OncePerRequestFilter {
 
     private final RateLimitProperties rateLimitProperties;
 
-    private final Map<String, ClientRateInfo> clientRateMap = new ConcurrentHashMap<>();
+    // Use a bounded, evicting cache to avoid unbounded memory growth
+    private final Cache<String, ClientRateInfo> clientRateCache = Caffeine.newBuilder()
+            .expireAfterAccess(Duration.ofMinutes(10))
+            .maximumSize(10_000)
+            .build();
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -45,35 +50,30 @@ public class RateLimitingFilter extends OncePerRequestFilter {
 
         String clientIp = getClientIp(request);
 
-        ClientRateInfo rateInfo = clientRateMap.compute(clientIp, (ip, existing) -> {
-            long now = System.currentTimeMillis();
-            long windowMillis = rateLimitProperties.getTimeWindowSeconds() * 1000L;
+        long now = System.currentTimeMillis();
+        long windowMillis = rateLimitProperties.getTimeWindowSeconds() * 1000L;
 
-            if (existing == null || now - existing.windowStart > windowMillis) {
-                return new ClientRateInfo(now, new AtomicInteger(0));
-            }
-
-            return existing;
-        });
+        // Retrieve existing ClientRateInfo or create/reset when window expired
+        ClientRateInfo rateInfo = clientRateCache.getIfPresent(clientIp);
+        if (rateInfo == null || now - rateInfo.windowStart > windowMillis) {
+            ClientRateInfo newInfo = new ClientRateInfo(now, new AtomicInteger(0));
+            clientRateCache.put(clientIp, newInfo);
+            rateInfo = newInfo;
+        }
 
         int currentCount = rateInfo.requestCount.incrementAndGet();
-        int remaining = Math.max(0,
-                rateLimitProperties.getMaxRequests() - currentCount);
+        int remaining = Math.max(0, rateLimitProperties.getMaxRequests() - currentCount);
 
-        response.setHeader("X-Rate-Limit-Limit",
-                String.valueOf(rateLimitProperties.getMaxRequests()));
-
-        response.setHeader("X-Rate-Limit-Remaining",
-                String.valueOf(remaining));
+        response.setHeader("X-Rate-Limit-Limit", String.valueOf(rateLimitProperties.getMaxRequests()));
+        response.setHeader("X-Rate-Limit-Remaining", String.valueOf(remaining));
 
         if (currentCount > rateLimitProperties.getMaxRequests()) {
-
             long elapsedMillis = System.currentTimeMillis() - rateInfo.windowStart;
 
             long retryAfterSeconds = Math.max(1,
                     (rateLimitProperties.getTimeWindowSeconds() * 1000L - elapsedMillis) / 1000L);
 
-            log.warn("Rate limit exceeded for IP={} requests={} retry={}s",
+            log.warn("Rate limit exceeded for IP={} requests={} retry={s}",
                     clientIp, currentCount, retryAfterSeconds);
 
             response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
@@ -82,11 +82,11 @@ public class RateLimitingFilter extends OncePerRequestFilter {
 
             String body = """
                     {
-                      "timestamp": "%s",
-                      "status": 429,
-                      "error": "Too Many Requests",
-                      "message": "Rate limit exceeded",
-                      "path": "%s"
+                        "timestamp": "%s",
+                        "status": 429,
+                        "error": "Too Many Requests",
+                        "message": "Rate limit exceeded",
+                        "path": "%s"
                     }
                     """.formatted(Instant.now(), request.getRequestURI());
 
@@ -124,7 +124,6 @@ public class RateLimitingFilter extends OncePerRequestFilter {
      * windowStart = start of the current window.
      */
     static class ClientRateInfo {
-
         final long windowStart;
         final AtomicInteger requestCount;
 

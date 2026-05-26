@@ -87,7 +87,8 @@ public class RomanNumeralConverterService {
 
     @Observed(name = "romannumeral.range.converter", contextualName = "range-roman-conversion")
     public List<RomanNumeralResponse> convertRangeToRoman(int min, int max) {
-
+        validateRange(min);
+        validateRange(max);
         if (min >= max) {
             throw new InvalidRequestException("Invalid range: 'min'("+ min +") value must be less than " +
                     "'max' ("+max +"). Please ensure 'min' is smaller than 'max'.");
@@ -110,5 +111,13 @@ public class RomanNumeralConverterService {
     @PreDestroy
     void shutdownExecutor() {
         rangeExecutor.shutdown();
+        try {
+            if(!rangeExecutor.awaitTermination(5, java.util.concurrent.TimeUnit.SECONDS)) {
+                rangeExecutor.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            rangeExecutor.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
     }
 }

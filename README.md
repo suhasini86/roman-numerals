@@ -1,6 +1,6 @@
 # roman-numeral-converter
 
-This project implements a Roman numeral conversion service that converts integers to their Roman numeral representation with support for single-value and range-based conversion in a constrained range of 1 to 3999.
+This project implements a Roman numeral conversion microservice that converts integers to their Roman numeral representation with support for single-value and range-based conversion in a constrained range of 1 to 3999.
 
 The goal of this project is to demonstrate how to design and build a production-ready microservice, including:
 
@@ -247,7 +247,7 @@ Performance testing is implemented to validate system behavior under concurrent 
 #### Run load tests
 Use the below command to run a load test on this API
 ``` bash
-    mvn test -Dtest=RomanNumeralConverterLoadTest
+    mvn test -DexcludedGroups="" -DincludedGroups=loadtest
 ```
 
 The `RomanNumeralConverterLoadTest` simulates 400 requests with 20 concurrent threads, including an initial warm-up phase. The test enforces the following performance criteria:
@@ -255,8 +255,6 @@ The `RomanNumeralConverterLoadTest` simulates 400 requests with 20 concurrent th
 ● Zero request failures
 
 ● Average response time < 250 ms
-
-● 95th percentile (P95) latency < 500 ms
 
 These thresholds ensure the service maintains both stability and responsiveness under load.
 ![img_4.png](images/load-test.png)

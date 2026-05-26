@@ -59,7 +59,7 @@ public class RomanNumeralController {
      */
     @Operation(
             summary = "Convert a single integer to Roman numeral",
-            description = "Accepts an integer between"+ MIN_VALUE+ "and "+ MAX_VALUE + "and returns its Roman numeral representation."
+            description = "Accepts an integer between "+ MIN_VALUE+ " and "+ MAX_VALUE + "and returns its Roman numeral representation."
     )
     @ApiResponses(value = {
             @ApiResponse(
@@ -129,7 +129,7 @@ public class RomanNumeralController {
     @Operation(
             summary = "Convert a range of integers to Roman numerals",
             description = "Accepts a range of integers (min and max) between "+ MIN_VALUE+" and "+ MAX_VALUE +
-                    "and returns their Roman numeral representations in ascending order. Computed using Java 21 virtual threads."
+                    " and returns their Roman numeral representations in ascending order. Computed using Java 21 virtual threads."
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successful conversion of range",
@@ -175,13 +175,13 @@ public class RomanNumeralController {
     @Observed(name = "romannumeral.convertRange", contextualName = "convert-range-to-roman")
     @GetMapping(params = {MIN, MAX})
     public ResponseEntity<RangeConversionResponse> convertRangeToRoman(
-            @Parameter(description = "Start of range (inclusive)"+MIN_VALUE+"-"+MAX_VALUE+")", example = "1")
+            @Parameter(description = "Start of range (inclusive) ("+MIN_VALUE+"-"+MAX_VALUE+")", example = "1")
             @RequestParam(name = MIN, required = false)
             @Min(value = MIN_VALUE, message = MIN + INVALID_RANGE_ERR_MSG)
             @Max(value = MAX_VALUE, message = MIN + INVALID_RANGE_ERR_MSG)
             Integer min,
 
-            @Parameter(description = "End of range (inclusive)"+MIN_VALUE+"-"+MAX_VALUE+")", example = "4")
+            @Parameter(description = "End of range (inclusive) ("+MIN_VALUE+"-"+MAX_VALUE+")", example = "4")
             @RequestParam(name = MAX, required = false)
             @Min(value = MIN_VALUE, message = MAX + INVALID_RANGE_ERR_MSG)
             @Max(value = MAX_VALUE, message = MAX + INVALID_RANGE_ERR_MSG)

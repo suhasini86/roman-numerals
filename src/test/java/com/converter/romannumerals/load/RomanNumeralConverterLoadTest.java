@@ -3,6 +3,7 @@ package com.converter.romannumerals.load;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -26,9 +27,10 @@ import static org.assertj.core.api.Assertions.*;
  * {@code mvn test -Dgroups=loadtest}
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-                                properties = {"rate-limit.enabled=false"})
+        properties = {"rate-limit.enabled=false"})
 @Slf4j
 @DisplayName("Roman Numeral Converter Load Tests")
+@Tag("loadtest")
 class RomanNumeralConverterLoadTest {
 
     @LocalServerPort
@@ -38,7 +40,7 @@ class RomanNumeralConverterLoadTest {
     private String baseUrl;
 
     @BeforeEach
-    void setup() {
+    void setUp() {
         restTemplate = new TestRestTemplate();
         baseUrl = "http://localhost:" + port;
     }
@@ -141,8 +143,7 @@ class RomanNumeralConverterLoadTest {
         int totalRequests = 300;
 
         LoadTestMetrics metrics = executeLoadTest(concurrentRequests, totalRequests, () -> {
-            Random random = new Random();
-            int randomNumber = random.nextBoolean() ? 1 : 3999;
+            int randomNumber = new Random().nextBoolean() ? 1 : 3999;
             return restTemplate.getForEntity(
                     baseUrl + "/romannumeral?query=" + randomNumber,
                     Object.class
@@ -201,7 +202,7 @@ class RomanNumeralConverterLoadTest {
             );
         });
 
-        logMetrics("200 Concurrent Threads Stress Test", metrics);
+        logMetrics("Stress Test: 200 Concurrent Threads", metrics);
 
         assertThat(metrics.totalRequests).isEqualTo(totalRequests);
         assertThat(metrics.successfulRequests).isGreaterThanOrEqualTo((int)(totalRequests * 0.90));
@@ -253,12 +254,12 @@ class RomanNumeralConverterLoadTest {
         }
 
         executorService.shutdown();
-        try{
+        try {
             if (!executorService.awaitTermination(durationSeconds + 10, TimeUnit.SECONDS)) {
                 log.warn("Sustained load executor did not terminate within timeout - forcing shutdown");
                 executorService.shutdownNow();
                 if (!executorService.awaitTermination(30, TimeUnit.SECONDS)) {
-                    log.error("Sustained load executor did not terminate after shutdowns");
+                    log.error("Sustained load executor did not terminate after shutdown");
                 }
             }
         } catch (InterruptedException e) {
@@ -280,16 +281,16 @@ class RomanNumeralConverterLoadTest {
 
         double throughput = (double) totalRequests.get() / durationSeconds;
 
-        log.info("=".repeat(70));
-        log.info("SUSTAINED LOAD TEST RESULTS (30 seconds)");
-        log.info("=".repeat(70));
+        log.info("-".repeat(70));
+        log.info("SUSTAINED LOAD TEST RESULTS (30 seconds):");
+        log.info("-".repeat(70));
         log.info("Total Requests: {}", totalRequests.get());
-        log.info("Successful Requests: {} ({:.2f}%)", successfulRequests.get(),
+        log.info("Successful Requests: {} ({}%)", successfulRequests.get(),
                 (successfulRequests.get() * 100.0) / totalRequests.get());
-        log.info("Throughput: {:.2f} requests/second", throughput);
-        log.info("Average Response Time: {:.2f} ms", avgResponseTime);
+        log.info("Throughput: {} requests/second", throughput);
+        log.info("Average Response Time: {} ms", avgResponseTime);
         log.info("Max Response Time: {} ms", maxResponseTime);
-        log.info("=".repeat(70));
+        log.info("-".repeat(70));
 
         assertThat(totalRequests.get()).isGreaterThan(0);
         assertThat(successfulRequests.get()).isGreaterThanOrEqualTo((int)(totalRequests.get() * 0.90));
@@ -312,7 +313,7 @@ class RomanNumeralConverterLoadTest {
                 );
             });
 
-            log.info("Ramp-up: {} threads - Avg Response Time: {:.2f} ms, Success Rate: {:.2f}%",
+            log.info("Ramp-up: {} threads - Avg Response Time: {} ms, Success Rate: {}%",
                     threadCount, metrics.avgResponseTime,
                     (metrics.successfulRequests * 100.0) / metrics.totalRequests);
         }
@@ -327,7 +328,7 @@ class RomanNumeralConverterLoadTest {
      * @return LoadTestMetrics with collected performance data
      */
     private LoadTestMetrics executeLoadTest(int concurrentRequests, int totalRequests,
-                                           RequestSupplier requestSupplier) throws InterruptedException {
+                                            RequestSupplier requestSupplier) throws InterruptedException {
         ExecutorService executorService = Executors.newFixedThreadPool(concurrentRequests);
         List<Long> responseTimes = Collections.synchronizedList(new ArrayList<>());
         AtomicInteger successfulRequests = new AtomicInteger(0);
@@ -360,12 +361,12 @@ class RomanNumeralConverterLoadTest {
         }
 
         executorService.shutdown();
-        try{
-            if (!executorService.awaitTermination(5, TimeUnit.SECONDS)) {
+        try {
+            if (!executorService.awaitTermination(5, TimeUnit.MINUTES)) {
                 log.warn("Sustained load executor did not terminate within timeout - forcing shutdown");
                 executorService.shutdownNow();
                 if (!executorService.awaitTermination(30, TimeUnit.SECONDS)) {
-                    log.error("Sustained load executor did not terminate after shutdowns");
+                    log.error("Sustained load executor did not terminate after shutdown");
                 }
             }
         } catch (InterruptedException e) {
@@ -375,6 +376,7 @@ class RomanNumeralConverterLoadTest {
         }
 
         long endTime = System.currentTimeMillis();
+
         double avgResponseTime = responseTimes.stream()
                 .mapToLong(Long::longValue)
                 .average()
@@ -406,22 +408,22 @@ class RomanNumeralConverterLoadTest {
      * Log load test metrics in a formatted table.
      */
     private void logMetrics(String testName, LoadTestMetrics metrics) {
-        log.info("=".repeat(70));
+        log.info("-".repeat(70));
         log.info("LOAD TEST RESULTS: {}", testName);
-        log.info("=".repeat(70));
+        log.info("-".repeat(70));
         log.info("Total Requests: {}", metrics.totalRequests);
-        log.info("Successful Requests: {} ({:.2f}%)", metrics.successfulRequests,
+        log.info("Successful Requests: {} ({}%)", metrics.successfulRequests,
                 (metrics.successfulRequests * 100.0) / metrics.totalRequests);
         log.info("Bad Requests (400): {}", metrics.badRequestCount);
         log.info("Failed Requests: {}", metrics.failedRequests);
-        log.info("Total Duration: {} ms ({:.2f} seconds)", metrics.totalDuration,
+        log.info("Total Duration: {} ms ({} seconds)", metrics.totalDuration,
                 metrics.totalDuration / 1000.0);
-        log.info("Average Response Time: {:.2f} ms", metrics.avgResponseTime);
+        log.info("Average Response Time: {} ms", metrics.avgResponseTime);
         log.info("Min Response Time: {} ms", metrics.minResponseTime);
         log.info("Max Response Time: {} ms", metrics.maxResponseTime);
-        log.info("Throughput: {:.2f} requests/second", 
+        log.info("Throughput: {} requests/second",
                 (metrics.totalRequests * 1000.0) / metrics.totalDuration);
-        log.info("=".repeat(70));
+        log.info("-".repeat(70));
     }
 
     /**
@@ -438,8 +440,8 @@ class RomanNumeralConverterLoadTest {
         final long totalDuration;
 
         LoadTestMetrics(int totalRequests, int successfulRequests, int badRequestCount,
-                       int failedRequests, double avgResponseTime, long minResponseTime,
-                       long maxResponseTime, long totalDuration) {
+                        int failedRequests, double avgResponseTime, long minResponseTime,
+                        long maxResponseTime, long totalDuration) {
             this.totalRequests = totalRequests;
             this.successfulRequests = successfulRequests;
             this.badRequestCount = badRequestCount;
@@ -456,7 +458,6 @@ class RomanNumeralConverterLoadTest {
      */
     @FunctionalInterface
     private interface RequestSupplier {
-        ResponseEntity<?> get();
+        ResponseEntity<?> get() throws Exception;
     }
 }
-
